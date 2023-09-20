@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Portfolio</title>
+    <link rel="stylesheet" href="../CSS/style.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
+    />
+    <link
+      rel="shortcut icon"
+      href="../asserts/images/img1.jpg"
+      type="image/x-icon"
+    />
+  </head>
+  <body>
+    <header class="header" id="userHeader">
+      <div class="logo">Portfolio</div>
+      <nav>
+        <ul>
+          <li><a href="../HTML/index.html">Home</a></li>
+          <li><a href="../HTML/userProfile.html">Profile</a></li>
+
+          <li><a href="../HTML/userProjects.html">My Projects</a></li>
+
+          <li class="search">
+            <input type="text" id="searchInput" placeholder="Search" />
+          </li>
+          <li id="logout" style="color: aliceblue"><button>Logout</button></li>
+        </ul>
+      </nav>
+    </header>
+
+    <main>
+      <section class="container">
+        <div class="topMain">
+          <p class="title">
+            Hi, my name is
+            <span class="name" id="username">Ch Muhammad Zeeshan Saleem</span>
+          </p>
+          <p class="title">I'm the Javascript Developer.</p>
+          <p class="btn1 title"><a href="#aboutUs"> Know more</a></p>
+        </div>
+      </section>
+      <!-- section for About -->
+
+      <section class="about" id="aboutUs">
+        <p class="aboutText">about me</p>
+        <div class="aboutrow">
+          <div class="profileImg">
+            <img
+              src="../asserts/images/img1.jpg"
+              alt="About Img"
+              class="proImg"
+            />
+          </div>
+          <div class="aboutMeText">
+            <p>
+              This is where you can describe yourself. The more you describe, the better!
+            </p>
+            <p class="extraInfo">
+              Extra information about you, such as hobbies and goals.
+            </p>
+            <p class="resume">
+              <a href="#" class="resumeLink">View Resume</a>
+            </p>
+          </div>
+          
+      </section>
+
+      <!-- Section for Projects  -->
+
+      <article class="projects">
+        <p class="projectHeading">Projects</p>
+        <section class="modal">
+          <div class="area">
+            <button class="cross" id="cross">X</button>
+            <div class="MainContentOfProject">
+              <div class="modalPic"></div>
+              <div class="modalDetails"></div>
+            </div>
+          </div>
+        </section>
+      </article>
+
+      <!-- section for Contacts -->
+
+      <section class="contact">
+        <p class="contactHeading">Contact</p>
+        <p class="contacText">[Put your call to action here]</p>
+        <div class="contactBtn">
+          <a
+            href="//api.whatsapp.com/send?phone=923440177289&text=Your call goes to Focusteck"
+            class="callLink"
+          >
+            Call to Action</a
+          >
+        </div>
+      </section>
+    </main>
+    <!-- footer -->
+    <footer>
+      <div class="imgdiv">
+        <img
+          src="../asserts/images/footerarrow.png"
+          alt="Up icon"
+          class="cap"
+        />
+      </div>
+      <div class="icon">
+        <a href="https://www.facebook.com/chzeeshan22/">
+          <i
+            class="fa fa-twitter"
+            href=""
+            style="font-size: 48px; color: white"
+          ></i
+        ></a>
+        <a href="https://www.linkedin.com/in/ch-zeeshan/">
+          <i
+            class="fa fa-linkedin"
+            aria-hidden="true"
+            style="font-size: 48px; color: white"
+          ></i>
+        </a>
+        <a href="https://github.com/chzeeshansaleem"
+          ><i
+            class="fa fa-github"
+            aria-hidden="true"
+            style="font-size: 48px; color: white"
+          ></i
+        ></a>
+      </div>
+      <div class="copyright">
+        &copy;2021 - Template developed by Jacobo Martínez
+      </div>
+      <div class="lastdiv">
+        <div class="fork">
+          <div class="forkicon">
+            <i class="fa fa-code-fork">&nbsp; Fork</i>
+          </div>
+          <div class="number">
+            <span>3854</span>
+          </div>
+        </div>
+        <div class="star">
+          <div class="staricon">
+            <i class="fa fa-star">&nbsp; Star</i>
+          </div>
+          <div class="number">
+            <span>3854</span>
+          </div>
+        </div>
+      </div>
+    </footer>
+
+    <script src="../JS/index.js" type="module"></script>
+  </body>
+</html>

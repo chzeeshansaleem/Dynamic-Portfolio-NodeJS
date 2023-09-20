@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>View All Users</title>
+    <link rel="stylesheet" href="../CSS/style.css" />
+    <link
+      rel="shortcut icon"
+      href="../asserts/images/img1.jpg"
+      type="image/x-icon"
+    />
+    <style>
+      table {
+        width: 50%;
+        margin-left: 25%;
+
+        border-collapse: 1;
+        margin-top: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <header class="header" id="userHeader">
+      <div class="logo">Admin Panel</div>
+      <nav>
+        <ul>
+          <li><a href="../HTML/adminUsers.html">Users</a></li>
+
+          <li><a href="../HTML/adminProject.html">Projects</a></li>
+
+          <li><input type="text" id="searchInput" placeholder="Search" /></li>
+          <li id="logout" style="color: aliceblue">
+            <button>Logout</button>
+          </li>
+        </ul>
+      </nav>
+    </header>
+
+    <main style="margin-top: 20vh; text-align: center">
+      <button
+        style="
+          background-color: rgb(131, 131, 151);
+
+          border: none;
+          padding: 5px;
+        "
+        class="AdminAddUserBtn"
+      >
+        Add Users/Admin
+      </button>
+      <div id="tableContainer"></div>
+      <div class="adminUser"></div>
+      <div class="AdminEditUserRole"></div>
+      <div class="AdminAddUser">
+        <div class="adminCross"><button>X</button></div>
+      </div>
+    </main>
+    <script src="../JS/adminUser.js" type="module"></script>
+  </body>
+</html>

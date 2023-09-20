@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>user portfolio</title>
+    <link
+      rel="shortcut icon"
+      href="../asserts/images/img1.jpg"
+      type="image/x-icon"
+    />
+    <link rel="stylesheet" href="../CSS/style.css" />
+    <style>
+      .editProfile {
+        margin-top: 20vh;
+        float: right;
+        margin-right: 20px;
+        background-color: lightgreen;
+        padding: 5px;
+        border: none;
+        border-radius: 5px;
+        margin-bottom: 10px;
+      }
+      table {
+        border-collapse: collapse;
+        width: 100%;
+      }
+
+      th,
+      td {
+        border: 1px solid #dddddd;
+        text-align: left;
+        padding: 8px;
+      }
+    </style>
+  </head>
+  <body>
+    <header class="header" id="userHeader">
+      <div class="logo">Portfolio</div>
+      <nav>
+        <ul>
+          <li><a href="../HTML/index.html">Home</a></li>
+          <li><a href="../HTML/userProfile.html">Profile</a></li>
+
+          <li><a href="../HTML/userProjects.html"> My Projects</a></li>
+
+          <li><input type="search" placeholder="Search" /></li>
+          <li id="logout" style="color: aliceblue"><button>Logout</button></li>
+        </ul>
+      </nav>
+    </header>
+    <main>
+      <section>
+        <button class="editProfile">Update Profile</button>
+        <section class="modal">
+          <div class="area">
+            <button class="cross" id="crossprofile">X</button>
+            <div class="MainContentOfProject"></div>
+          </div>
+        </section>
+        <table>
+          <tr>
+            <th>Profile</th>
+            <th>Details</th>
+          </tr>
+          <tr>
+            <td>Email</td>
+            <td class="emailProfile"></td>
+          </tr>
+          <tr>
+            <td>Name</td>
+            <td class="nameProfile"></td>
+          </tr>
+          <tr>
+            <td>Password</td>
+            <td class="passwordProfile"></td>
+          </tr>
+          <tr>
+            <td>Role</td>
+            <td class="roleProfile"></td>
+          </tr>
+          <tr>
+            <td>Phone Number</td>
+            <td class="numberProfile"></td>
+          </tr>
+          <tr>
+            <td>Education</td>
+            <td class="educationProfile"></td>
+          </tr>
+          <tr>
+            <td>Skills</td>
+            <td class="skillsProfile"></td>
+          </tr>
+          <tr>
+            <td>Experience</td>
+            <td class="experienceProfile"></td>
+          </tr>
+        </table>
+      </section>
+    </main>
+    <footer>
+      <div class="imgdiv">
+        <img
+          src="../asserts/images/footerarrow.png"
+          alt="Up icon"
+          class="cap"
+        />
+      </div>
+      <div class="icon">
+        <a href="https://www.facebook.com/chzeeshan22/">
+          <i
+            class="fa fa-twitter"
+            href=""
+            style="font-size: 48px; color: white"
+          ></i
+        ></a>
+        <a href="https://www.linkedin.com/in/ch-zeeshan/">
+          <i
+            class="fa fa-linkedin"
+            aria-hidden="true"
+            style="font-size: 48px; color: white"
+          ></i>
+        </a>
+        <a href="https://github.com/chzeeshansaleem"
+          ><i
+            class="fa fa-github"
+            aria-hidden="true"
+            style="font-size: 48px; color: white"
+          ></i
+        ></a>
+      </div>
+      <div class="copyright">
+        &copy;2021 - Template developed by Jacobo Martínez
+      </div>
+      <div class="lastdiv">
+        <div class="fork">
+          <div class="forkicon">
+            <i class="fa fa-code-fork">&nbsp; Fork</i>
+          </div>
+          <div class="number">
+            <span>3854</span>
+          </div>
+        </div>
+        <div class="star">
+          <div class="staricon">
+            <i class="fa fa-star">&nbsp; Star</i>
+          </div>
+          <div class="number">
+            <span>3854</span>
+          </div>
+        </div>
+      </div>
+    </footer>
+    <script src="../JS/profile.js" type="module"></script>
+  </body>
+</html>

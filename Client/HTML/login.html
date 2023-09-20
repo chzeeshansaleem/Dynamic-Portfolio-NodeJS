@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>login</title>
+    <link rel="stylesheet" href="../CSS/style.css" />
+    <style>
+      body {
+        background: linear-gradient(
+          to right,
+          rgba(0, 171, 178, 255),
+          rgba(0, 205, 172, 255)
+        );
+      }
+      input {
+        border: none;
+        background-color: transparent;
+      }
+      input:focus {
+        border: none;
+      }
+      form a {
+        text-decoration: none;
+      }
+      .signup {
+        background-color: white;
+      }
+      .login {
+        background: linear-gradient(
+          to right,
+          rgba(0, 171, 178, 255),
+          rgba(0, 205, 172, 255)
+        );
+        -webkit-background-clip: text;
+        color: transparent;
+        border: 2px solid gray;
+        border-radius: 5px;
+        padding: 5px;
+        width: 50%;
+        /* color: darkblue; */
+        box-shadow: 2px 2px 5px gray, -2px -2px 5px gray;
+      }
+    </style>
+  </head>
+  <body>
+    <form action="" id="login" class="signup">
+      <table>
+        <thead>
+          Login for Portfolio
+        </thead>
+        <tbody>
+          <tr>
+            <td><label for="email">Email:</label></td>
+            <td>
+              <input
+                type="email"
+                name="email"
+                id="loginemail"
+                placeholder="Enter Your Email"
+              />
+            </td>
+          </tr>
+          <tr>
+            <td><label for="password">Password: </label></td>
+            <td>
+              <input
+                type="password"
+                name="password"
+                id="loginpassword"
+                placeholder="Enter Your Password"
+              />
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <button type="submit" class="login">login</button>
+      <a href="signUp.html">Register here</a>
+    </form>
+    <script src="../JS/login.js" type="module"></script>
+  </body>
+</html>

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Projects</title>
+    <link rel="stylesheet" href="../CSS/style.css" />
+    <link
+      rel="shortcut icon"
+      href="../asserts/images/img1.jpg"
+      type="image/x-icon"
+    />
+  </head>
+  <body>
+    <header class="header" id="userHeader">
+      <div class="logo">Admin Panel</div>
+      <nav>
+        <ul>
+          <li><a href="../HTML/adminUsers.html">Users</a></li>
+
+          <li><a href="../HTML/adminProject.html">Projects</a></li>
+
+          <li><input type="text" id="searchInput" placeholder="Search" /></li>
+          <li id="logout" style="color: aliceblue">
+            <button>Logout</button>
+          </li>
+        </ul>
+      </nav>
+    </header>
+    <main style="margin-top: 15vh">
+      <article class="projects">
+        <p class="projectHeading">Projects</p>
+        <section class="modal">
+          <div class="area">
+            <button class="cross" id="cross">X</button>
+            <div class="MainContentOfProject">
+              <div class="modalPic"></div>
+              <div class="modalDetails"></div>
+            </div>
+          </div>
+        </section>
+      </article>
+    </main>
+    <script src="../JS/AdminViewProjects.js" type="module"></script>
+  </body>
+</html>

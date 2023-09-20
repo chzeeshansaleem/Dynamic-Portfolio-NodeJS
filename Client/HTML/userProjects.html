@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="../CSS/style.css" />
+    <title>projects</title>
+    <link
+      rel="shortcut icon"
+      href="../asserts/images/img1.jpg"
+      type="image/x-icon"
+    />
+    <style>
+      .projectmain {
+        margin-top: 10vh;
+      }
+      .addbtn {
+        text-align: end;
+        margin-right: 50px;
+      }
+      .addProjectBtn {
+        margin-top: 5vh;
+        padding: 10px;
+        border: none;
+        background-color: lightskyblue;
+        border-radius: 5px;
+      }
+    </style>
+  </head>
+  <body>
+    <header class="header" id="userHeader">
+      <div class="logo">Portfolio</div>
+      <nav>
+        <ul>
+          <li><a href="../HTML/index.html">Home</a></li>
+          <li><a href="../HTML/userProfile.html">Profile</a></li>
+
+          <li><a href="../HTML/userProjects.html">My Projects</a></li>
+
+          <li><input type="text" id="searchInput" placeholder="Search" /></li>
+          <li id="logout" style="color: aliceblue"><button>Logout</button></li>
+        </ul>
+      </nav>
+    </header>
+
+    <main class="projectmain">
+      <div class="addbtn">
+        <button class="addProjectBtn">Add Projects</button>
+      </div>
+      <div class="addprojectModal">
+        <button class="cross" id="appProjectCross" style="margin-top: 20px">
+          X
+        </button>
+      </div>
+      <article class="usersprojects">
+        <p class="usersprojectHeading">Projects</p>
+        <section class="modalmodal">
+          <div class="editarea">
+            <button class="cross" id="cross">X</button>
+            <div class="userMainContentOfProject">
+              <div class="usermodalPic"></div>
+              <div class="usermodalDetails"></div>
+            </div>
+          </div>
+        </section>
+      </article>
+      <div class="editProjectModal"></div>
+    </main>
+    <footer>
+      <div class="imgdiv">
+        <img
+          src="../asserts/images/footerarrow.png"
+          alt="Up icon"
+          class="cap"
+        />
+      </div>
+      <div class="icon">
+        <a href="https://www.facebook.com/chzeeshan22/">
+          <i
+            class="fa fa-twitter"
+            href=""
+            style="font-size: 48px; color: white"
+          ></i
+        ></a>
+        <a href="https://www.linkedin.com/in/ch-zeeshan/">
+          <i
+            class="fa fa-linkedin"
+            aria-hidden="true"
+            style="font-size: 48px; color: white"
+          ></i>
+        </a>
+        <a href="https://github.com/chzeeshansaleem"
+          ><i
+            class="fa fa-github"
+            aria-hidden="true"
+            style="font-size: 48px; color: white"
+          ></i
+        ></a>
+      </div>
+      <div class="copyright">
+        &copy;2021 - Template developed by Jacobo Martínez
+      </div>
+      <div class="lastdiv">
+        <div class="fork">
+          <div class="forkicon">
+            <i class="fa fa-code-fork">&nbsp; Fork</i>
+          </div>
+          <div class="number">
+            <span>3854</span>
+          </div>
+        </div>
+        <div class="star">
+          <div class="staricon">
+            <i class="fa fa-star">&nbsp; Star</i>
+          </div>
+          <div class="number">
+            <span>3854</span>
+          </div>
+        </div>
+      </div>
+    </footer>
+    <script src="../JS/UserProject.js" type="module"></script>
+    <!-- <script src="../JS/index.js"></script> -->
+  </body>
+</html>

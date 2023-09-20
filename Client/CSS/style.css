@@ -1,0 +1,1021 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+
+  /* font-family: "Franklin Gothic Medium", "Arial Narrow", Arial, sans-serif; */
+}
+.header {
+  height: 10vh;
+  width: 100%;
+  background-color: black;
+  padding: 10px 100px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 20px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1;
+}
+#adminHeader {
+  display: block;
+}
+.logo {
+  width: 50%;
+  /* height: 10vh; */
+  text-align: center;
+  padding: 0px 10px;
+  float: left;
+  color: antiquewhite;
+  font-size: 24px;
+}
+
+nav {
+  width: 50%;
+  float: left;
+
+  /* background-color: aqua; */
+}
+nav ul {
+  display: flex;
+  justify-content: space-around;
+
+  align-content: center;
+}
+nav ul li {
+  list-style: none;
+}
+nav ul li a {
+  text-decoration: none;
+  color: lightyellow;
+}
+.container {
+  height: 100vh;
+
+  position: relative;
+}
+.topMain {
+  position: absolute;
+  top: 40%;
+  left: 10%;
+}
+.topMain .title {
+  font-size: 48px;
+  font-weight: bolder;
+
+  font-style: normal;
+  color: rgba(39, 32, 68, 255);
+}
+.name {
+  background: linear-gradient(
+    to right,
+    rgba(0, 171, 178, 255),
+    rgba(0, 205, 172, 255)
+  );
+  -webkit-background-clip: text;
+  color: transparent;
+}
+.btn1 a {
+  text-decoration: none;
+  background: linear-gradient(
+    to right,
+    rgba(0, 171, 178, 255),
+    rgba(0, 205, 172, 255)
+  );
+  -webkit-background-clip: text;
+  color: transparent;
+}
+.btn1 {
+  font-size: 28px;
+  font-weight: bold;
+  width: 50%;
+  text-align: center;
+  border-radius: 0%;
+  border: 3px solid transparent;
+  border-image: linear-gradient(
+    to right,
+    rgba(0, 171, 178, 255),
+    rgba(0, 205, 172, 255)
+  );
+  border-image-slice: 1;
+  background: linear-gradient(
+    to right,
+    rgba(0, 171, 178, 255),
+    rgba(0, 205, 172, 255)
+  );
+  -webkit-background-clip: text;
+  color: transparent;
+  padding: 5px;
+  margin-top: 15px;
+}
+/* css for about */
+.about {
+  height: 88vh;
+
+  background: linear-gradient(
+    to right,
+    rgba(0, 171, 178, 255),
+    rgba(0, 205, 172, 255)
+  );
+
+  width: 100%;
+  clip-path: polygon(0 0, 100% 0, 100% 70%, 0 100%);
+}
+.aboutText {
+  text-align: center;
+  color: #ffffff;
+  text-transform: uppercase;
+  font-size: 36px;
+
+  padding-top: 100px;
+}
+
+/* css for projects */
+.projects {
+  height: auto;
+  width: 100%;
+}
+.projectHeading {
+  color: rgba(39, 32, 68, 255);
+  text-align: center;
+  text-transform: uppercase;
+  font-size: 36px;
+  font-weight: bold;
+  padding-top: 20px;
+}
+.ProjectRow {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  margin-top: 20px;
+}
+
+.projectImg {
+  background-image: url(../asserts/images/pro1.jpg);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  width: 100%;
+  margin-right: 50px;
+  height: 50vh;
+  /* border: 2px solid rebeccapurple; */
+}
+.projectDetails {
+  width: 70%;
+  padding-left: 50px;
+  /* border: 2px solid red; */
+}
+.projectDetails h3 {
+  color: rgba(39, 32, 68, 255);
+  font-size: 26px;
+}
+.projectDetails .details {
+  font-size: 18px;
+  width: 80%;
+  margin-top: 10px;
+}
+.projectBtn {
+  display: flex;
+  justify-content: flex-start;
+  margin-top: 10px;
+}
+.projectBtn .liveBtn {
+  text-decoration: none;
+  font-size: 24px;
+  font-weight: bold;
+  width: 26%;
+  padding: 3px 10px;
+  text-align: center;
+  border-radius: 0%;
+  border: 3px solid transparent;
+  border-image: linear-gradient(
+    to right,
+    rgba(0, 171, 178, 255),
+    rgba(0, 205, 172, 255)
+  );
+  border-image-slice: 1;
+  background: linear-gradient(
+    to right,
+    rgba(0, 171, 178, 255),
+    rgba(0, 205, 172, 255)
+  );
+  -webkit-background-clip: text;
+  color: transparent;
+}
+.projectBtn .sourceBtn {
+  text-decoration: none;
+  font-size: 24px;
+  font-weight: bold;
+  width: 26%;
+  text-align: center;
+  margin-left: 10px;
+  background: linear-gradient(
+    to right,
+    rgba(0, 171, 178, 255),
+    rgba(0, 205, 172, 255)
+  );
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
+/* css for contact */
+.contact {
+  height: 40vh;
+  width: 100%;
+  background: linear-gradient(
+    to right,
+    rgba(0, 171, 178, 255),
+    rgba(0, 205, 172, 255)
+  );
+  /* position: relative; */
+  color: red;
+  text-align: center;
+  clip-path: polygon(0 30%, 100% 0, 100% 100%, 0 100%);
+}
+.contactHeading {
+  padding-top: 15vh;
+  color: white;
+  text-transform: uppercase;
+  font-size: 36px;
+}
+.contacText {
+  color: white;
+  margin-top: 20px;
+  font-size: 24px;
+}
+.contactBtn {
+  /* border: 2px solid white; */
+  /* width: 200px; */
+  /* position: absolute;
+  left: 43%; */
+  margin-top: 20px;
+  text-align: center;
+}
+.modal {
+  display: none;
+  width: 50%;
+  margin-left: 25%;
+  position: fixed;
+  top: 100px;
+  left: 0;
+  border-radius: 10px;
+  border: 2px solid lightslategrey;
+  background-color: lightblue;
+  z-index: 1000;
+}
+.area {
+  position: relative;
+}
+.cross {
+  position: absolute;
+  right: 5px;
+  top: 0px;
+  padding: 2px 5px;
+  background-color: transparent;
+  border: none;
+}
+.MainContentOfProject {
+  display: flex;
+  flex-direction: column;
+  margin-top: 10px;
+
+  padding: 20px;
+}
+.modalPic {
+  /* background-image: url("../asserts/images/pro2.jpg"); */
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  width: 100%;
+  height: 30vh;
+}
+.contactBtn .callLink {
+  text-decoration: none;
+  color: white;
+  font-size: 28px;
+  font-weight: bold;
+  border: 2px solid white;
+  padding: 3px 10px;
+}
+
+.aboutrow {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  align-content: center;
+  /* border: 5px solid green; */
+  margin-top: 15px;
+  width: 80%;
+  margin-left: 10%;
+}
+/* .profileImg {
+  background-image: url("../asserts/images/img1.jpg");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
+  height: 350px;
+  width: 350px;
+} */
+.proImg {
+  width: 350px;
+  height: auto;
+}
+.aboutMeText {
+  /* border: 5px solid red; */
+  color: white;
+  font-size: 24px;
+  width: 60%;
+  margin-left: 10%;
+  font-family: serif;
+  /* display: flex;
+  flex-direction: column;
+  align-content: space-between; */
+}
+.extraInfo {
+  margin-top: 10px;
+}
+.resume {
+  border: 3px solid white;
+  border-radius: 0%;
+  width: 26%;
+  margin-top: 10px;
+  text-align: center;
+  padding: 2px 0px;
+}
+.resume .resumeLink {
+  text-decoration: none;
+  color: white;
+}
+
+footer {
+  height: 40vh;
+  width: 100%;
+  background-color: rgba(51, 51, 51, 255);
+}
+.imgdiv {
+  text-align: center;
+}
+.cap {
+  color: white;
+  filter: invert(100%);
+  width: 40px;
+
+  text-align: center;
+  padding-top: 20px;
+}
+.icon {
+  text-align: center;
+  border-bottom: 2px solid darkgray;
+  width: 60%;
+  margin-left: 20%;
+}
+.icon a {
+  text-decoration: none;
+}
+.icon a i {
+  margin: 40px 20px;
+}
+.copyright {
+  text-align: center;
+  color: darkgray;
+  margin-top: 5px;
+}
+.lastdiv {
+  display: flex;
+  justify-content: center;
+  gap: 5px;
+  margin-top: 20px;
+}
+.star,
+.fork {
+  border-radius: 2px;
+  background-color: aliceblue;
+  width: 10%;
+}
+.staricon,
+.forkicon {
+  text-align: center;
+  border-right: 2px solid darkgrey;
+  float: left;
+  width: 50%;
+  background-color: lightblue;
+  padding: 5px 0px;
+}
+.number {
+  text-align: center;
+  float: left;
+  width: 50%;
+  padding: 5px 0px;
+}
+.signup {
+  width: 26%;
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 25vh;
+
+  border-radius: 5px;
+  box-shadow: 5px 5px 10px gray, -5px -5px 10px gray;
+}
+.signup table {
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+}
+.signupBtn {
+  width: 30%;
+}
+input {
+  padding: 5px;
+  margin-left: 5px;
+  border: 1px inset black;
+  border-radius: 5px;
+}
+/* test */
+.modal {
+  display: none;
+  position: fixed;
+  top: 100px;
+  left: 10%;
+  width: 30%;
+  height: auto;
+  background-color: white;
+}
+
+.modal-content {
+  background-color: #fff;
+  margin: 10% auto;
+  padding: 20px;
+  border-radius: 5px;
+  width: 70%;
+}
+
+.close {
+  float: right;
+  cursor: pointer;
+}
+.modalmodal {
+  display: none;
+  position: fixed;
+  top: 100px;
+  left: 10%;
+  width: 30%;
+  height: 50%;
+  background-color: rgba(164, 157, 157, 0.7);
+}
+/* css for userproject page  */
+.userProjectsContainer {
+  height: 180vh;
+  width: 100%;
+}
+
+.userprojectHeading {
+  color: rgba(39, 32, 68, 255);
+  text-align: center;
+  text-transform: uppercase;
+  font-size: 36px;
+  font-weight: bold;
+  padding-top: 20px;
+}
+
+.userProjectRow {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  margin-top: 20px;
+}
+
+.userProjectImg {
+  background-image: url(../asserts/images/pro1.jpg);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  width: 100%;
+  margin-right: 50px;
+  height: 50vh;
+  /* border: 2px solid rebeccapurple; */
+}
+
+.userProjectDetails {
+  width: 70%;
+  padding-left: 50px;
+  /* border: 2px solid red; */
+}
+
+.userProjectDetails h3 {
+  color: rgba(39, 32, 68, 255);
+  font-size: 26px;
+}
+
+.userProjectDetails .details {
+  font-size: 18px;
+  width: 80%;
+  margin-top: 10px;
+}
+
+.userProjectBtn {
+  display: flex;
+  justify-content: flex-start;
+  margin-top: 10px;
+}
+
+.userProjectBtn .userliveBtn {
+  text-decoration: none;
+  font-size: 15px;
+  font-weight: bold;
+  width: 26%;
+  padding: 3px 10px;
+  text-align: center;
+  border-radius: 0%;
+  background-color: green;
+}
+
+.userProjectBtn .usersourceBtn {
+  text-decoration: none;
+  font-size: 15px;
+  font-weight: bold;
+  width: 26%;
+  text-align: center;
+  margin-left: 10px;
+  background-color: red;
+}
+
+.usermodal-content {
+  background-color: #fff;
+  margin: 10% auto;
+  padding: 20px;
+  border-radius: 5px;
+  width: 70%;
+}
+
+.usercross {
+  float: right;
+  cursor: pointer;
+}
+.usermodal {
+  display: none;
+  width: 50%;
+  margin-left: 25%;
+  position: fixed;
+  top: 100px;
+  left: 0;
+  border-radius: 10px;
+  border: 2px solid lightslategrey;
+  background-color: lightblue;
+  z-index: 1000;
+}
+
+.userarea {
+  position: relative;
+}
+
+.usercross {
+  position: absolute;
+  right: 5px;
+  top: 0px;
+  padding: 2px 5px;
+  background-color: transparent;
+  border: none;
+}
+
+.userMainContentOfProject {
+  display: flex;
+  flex-direction: column;
+  margin-top: 10px;
+  padding: 20px;
+}
+
+.usermodalPic {
+  /* background-image: url("../asserts/images/pro2.jpg"); */
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  width: 100%;
+  height: 30vh;
+}
+/* Add Project Modal */
+.addprojectModal {
+  display: none;
+  width: 50%;
+  height: 40vh;
+  margin-left: 25%;
+  position: fixed;
+  top: 100px;
+  left: 0;
+  border-radius: 10px;
+  border: 2px solid lightslategrey;
+  background-color: lightblue;
+  z-index: 1000;
+}
+.editProjectModal {
+  display: none;
+  width: 50%;
+  height: 40vh;
+  margin-left: 25%;
+  position: fixed;
+  top: 100px;
+  left: 0;
+  border-radius: 10px;
+  border: 2px solid lightslategrey;
+  background-color: lightblue;
+  z-index: 1000;
+}
+form {
+  text-align: center;
+  /* background-color: antiquewhite; */
+  height: auto;
+  padding-bottom: 10px;
+}
+
+form label,
+form input,
+form button {
+  display: block;
+  margin: 10px auto;
+}
+.login {
+  padding: 2px 20px;
+}
+.AdminAddUser {
+  display: none;
+  width: 30%;
+  height: 40vh;
+  margin-left: 25%;
+  position: fixed;
+  top: 100px;
+  left: 0;
+  border-radius: 10px;
+  border: 2px solid lightslategrey;
+  background-color: lightblue;
+  z-index: 1000;
+}
+.AdminEditUserRole {
+  display: none;
+  width: 50%;
+  height: 20vh;
+  margin-left: 25%;
+  position: fixed;
+  top: 100px;
+  left: 0;
+  border-radius: 10px;
+  border: 2px solid lightslategrey;
+  background-color: lightblue;
+  z-index: 1000;
+}
+.adminCross {
+  position: absolute;
+  top: 10px;
+  right: 5px;
+}
+/* Media Queries */
+/* extra large screen */
+@media screen and (min-width: 1200px) {
+  /* .resume .resumeLink {
+    font-size: 20px;
+  } */
+  .resume {
+    width: 30%;
+  }
+}
+@media screen and (max-width: 1200px) {
+  .topMain .title {
+    font-size: 36px;
+  }
+  .btn1 {
+    font-size: 16px;
+
+    width: 30%;
+  }
+  .priImg {
+    max-width: 100%;
+    height: auto;
+  }
+  .resume .resumeLink {
+    font-size: 16px;
+  }
+  .aboutMeText {
+    font-size: 20px;
+  }
+
+  .projectBtn .liveBtn {
+    font-size: 18px;
+
+    width: 35%;
+    padding: 0px 0px;
+  }
+  .projectBtn .sourceBtn {
+    font-size: 18px;
+
+    width: 35%;
+  }
+
+  .contact {
+    height: 40vh;
+  }
+  .star,
+  .fork {
+    border-radius: 2px;
+    width: 12%;
+  }
+  .signup {
+    width: 40%;
+  }
+}
+/*  large screen */
+@media screen and (max-width: 992px) {
+  .topMain .title {
+    font-size: 32px;
+  }
+  .btn1 {
+    font-size: 22px;
+
+    width: 50%;
+  }
+
+  .resume .resumeLink {
+    font-size: 16px;
+  }
+  .proImg {
+    width: 300px;
+  }
+
+  .projectBtn .liveBtn {
+    font-size: 18px;
+
+    width: 40%;
+    padding: 0px 0px;
+  }
+  .projectBtn .sourceBtn {
+    font-size: 18px;
+
+    width: 40%;
+  }
+  .aboutMeText {
+    font-size: 16px;
+  }
+  .resume {
+    width: 50%;
+  }
+  .star,
+  .fork {
+    border-radius: 2px;
+    width: 15%;
+  }
+  .signup {
+    width: 55%;
+  }
+  /* medium screen */
+}
+@media screen and (max-width: 768px) {
+  .topMain .title {
+    font-size: 28px;
+  }
+  .btn1 {
+    font-size: 20px;
+
+    width: 45%;
+  }
+  .proImg {
+    width: 250px;
+  }
+
+  .projectBtn .liveBtn {
+    font-size: 14px;
+
+    width: 45%;
+    padding: 0px 0px;
+  }
+  .projectBtn .sourceBtn {
+    font-size: 14px;
+
+    width: 45%;
+  }
+  .aboutMeText {
+    font-size: 14px;
+  }
+  .resume .resumeLink {
+    font-size: 14px;
+  }
+  .resume {
+    width: 50%;
+  }
+  .ProjectRow {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    margin-top: 20px;
+  }
+  .projectImg {
+    background-image: url(../asserts/images/pro2.jpg);
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    width: 100%;
+    margin-right: 50px;
+    height: 50vh;
+    /* border: 2px solid rebeccapurple; */
+  }
+  .projectDetails {
+    width: 70%;
+    padding-left: 50px;
+    /* border: 2px solid red; */
+  }
+  .projectDetails h3 {
+    color: rgba(39, 32, 68, 255);
+    font-size: 26px;
+  }
+  .projectDetails .details {
+    font-size: 14px;
+    width: 100%;
+    margin-top: 10px;
+  }
+
+  .projectBtn .liveBtn {
+    text-decoration: none;
+    font-size: 15px;
+    font-weight: bold;
+
+    padding: 3px 10px;
+  }
+  .projectBtn .sourceBtn {
+    font-size: 15px;
+
+    margin-left: 8px;
+  }
+  .star,
+  .fork {
+    border-radius: 2px;
+    width: 20%;
+  }
+  header {
+    height: 10vh;
+    width: 100%;
+    background-color: black;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .search {
+    display: none;
+  }
+  .logo {
+    width: 100%;
+    /* height: 10vh; */
+    text-align: center;
+    padding: 10px 10px;
+    float: none;
+
+    font-size: 24px;
+  }
+  nav {
+    width: 80%;
+    float: none;
+    padding-bottom: 5px;
+
+    /* background-color: aqua; */
+  }
+  .signup {
+    width: 65%;
+  }
+}
+/* small screen */
+@media screen and (max-width: 576px) {
+  .topMain .title {
+    font-size: 24px;
+  }
+  .btn1 {
+    font-size: 16px;
+
+    width: 50%;
+  }
+  .proImg {
+    background-color: #0e1212;
+    text-align: center;
+    max-width: 100%;
+    height: auto;
+  }
+  .profileImg {
+    text-align: center;
+  }
+
+  .about {
+    height: 100vh;
+    background: linear-gradient(
+      to right,
+      rgba(0, 171, 178, 255),
+      rgba(0, 205, 172, 255)
+    );
+    width: 100%;
+    clip-path: polygon(0 0, 100% 0, 100% 92%, 0 100%);
+  }
+  .aboutrow {
+    display: grid;
+    grid-template-columns: auto;
+    gap: 10px;
+  }
+  .aboutMeText {
+    font-size: 14px;
+    margin-left: 0%;
+    width: 100%;
+  }
+  .resume {
+    width: 50%;
+  }
+  .resume .resumeLink {
+    font-size: 14px;
+  }
+  .projects {
+    height: auto;
+  }
+  .ProjectRow {
+    display: grid;
+    grid-template-rows: auto;
+    gap: 10px;
+    margin-top: 20px;
+  }
+  .projectImg {
+    order: -1;
+  }
+  .projectDetails {
+    width: 100%;
+    padding-left: 10px;
+    /* border: 2px solid red; */
+  }
+  /* .projectDetails h3 {
+    color: rgba(39, 32, 68, 255);
+    font-size: 26px;
+  } */
+  .projectDetails .details {
+    width: 100%;
+  }
+  .projectBtn {
+    margin-top: 15px;
+  }
+  .contact {
+    height: 35vh;
+  }
+  footer {
+    height: 40vh;
+  }
+  .icon {
+    display: flex;
+
+    text-align: center;
+    justify-content: center;
+    border-bottom: 2px solid darkgray;
+    width: 100%;
+    margin-left: 0%;
+  }
+
+  .lastdiv {
+    display: flex;
+
+    justify-content: center;
+    gap: 5px;
+    margin-top: 20px;
+  }
+
+  .star,
+  .fork {
+    border-radius: 2px;
+    width: 35%;
+  }
+  .number {
+    padding: 5px 0px;
+  }
+  header {
+    height: 10vh;
+    width: 100%;
+    background-color: black;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .logo {
+    width: 100%;
+    /* height: 10vh; */
+    text-align: center;
+    padding: 10px 10px;
+    float: none;
+
+    font-size: 24px;
+  }
+  nav {
+    width: 100%;
+    float: none;
+    padding-bottom: 5px;
+
+    /* background-color: aqua; */
+  }
+  .signup {
+    width: 80%;
+  }
+}
+/*extra small screen */
+@media screen and (max-width: 350px) {
+}
