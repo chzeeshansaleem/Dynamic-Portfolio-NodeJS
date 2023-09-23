@@ -5,6 +5,20 @@
 
   /* font-family: "Franklin Gothic Medium", "Arial Narrow", Arial, sans-serif; */
 }
+
+.educationEditForm,
+.experienceEditForm {
+  display: none;
+  width: 40%;
+  top: 100px;
+  position: fixed;
+  margin-left: 30%;
+  margin-right: 30%;
+  border-radius: 10px;
+  background-color: lightslategray;
+  height: auto;
+  z-index: 1000;
+}
 .header {
   height: 10vh;
   width: 100%;

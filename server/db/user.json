@@ -7,9 +7,7 @@
     "role": "admin"
   },
   {
-    "education": [],
     "email": "admin123@gmail.com",
-    "experience": [],
     "name": "admin",
     "password": "12345",
     "phoneNumber": "123456",
@@ -17,9 +15,8 @@
     "skills": []
   },
   {
-    "education": [],
     "email": "zeeshan@gmail.com",
-    "experience": ["5year", "4year"],
+
     "name": "zeeshan",
     "password": "12345",
     "phoneNumber": "0341",
@@ -27,9 +24,7 @@
     "skills": []
   },
   {
-    "education": [],
     "email": "shani@gmail.com",
-    "experience": [],
     "name": "zeeshan",
     "password": "12345",
     "phoneNumber": "",

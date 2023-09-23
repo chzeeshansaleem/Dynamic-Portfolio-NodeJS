@@ -5,17 +5,29 @@ import { v4 as uuidv4 } from "uuid";
 import jwt from "jsonwebtoken";
 import cors from "cors";
 import users from "../server/db/user.json" assert { type: "json" };
+import education from "../server/db/education.json" assert { type: "json" };
+import experience from "../server/db/experience.json" assert { type: "json" };
+import { verifyToken } from "./controllers/verify.js";
 import projectData from "../server/db/projects.json" assert { type: "json" };
 const port = process.env.PORT || 8000;
 const secretKey = process.env.SECRET_KEY;
 const server = http.createServer((req, res) => {
   const parsedUrl = url.parse(req.url, true);
   const pathname = parsedUrl.pathname;
+
   cors()(req, res, () => {
     if (req.url === "/") {
-      res.writeHead(200, { "Content-Type": "application/json" });
-      res.write(JSON.stringify(users));
-      res.end();
+      try {
+        res.writeHead(200, { "Content-Type": "application/json" });
+        res.write(JSON.stringify(users));
+        res.end();
+      } catch (error) {
+        console.error("Token verification failed");
+        console.error(err);
+        res.writeHead(403, { "Content-Type": "application/json" });
+        res.write(JSON.stringify("nO USER fOUND"));
+        res.end();
+      }
     } else if (req.url === "/signup" && req.method === "POST") {
       let requestBody = "";
 
@@ -169,7 +181,25 @@ const server = http.createServer((req, res) => {
                 expiresIn: "1m",
               });
 
-              user.token = token;
+              //  user.token = token;
+              console.log(token);
+              res.setHeader(
+                "Set-Cookie",
+                `token=${token}; Path=/; Max-Age=3600; SameSite=Strict`
+              );
+
+              verifyToken(token)
+                .then((decoded) => {
+                  // Token is valid, you can access the decoded data
+                  console.log("Token is valid");
+                  console.log(decoded);
+                })
+
+                .catch((err) => {
+                  // Token is invalid or expired
+                  console.error("Token verification failed");
+                  console.error(err);
+                });
               console.log("Login successful");
               if (user.role === "admin") {
                 res.writeHead(222, { "Content-Type": "application/json" });
@@ -177,13 +207,18 @@ const server = http.createServer((req, res) => {
                   JSON.stringify({
                     message: "Admin Login Successfully",
                     token,
+                    user,
                   })
                 );
               } else {
                 res.writeHead(200, { "Content-Type": "application/json" });
 
                 res.end(
-                  JSON.stringify({ message: "User Login successful", token })
+                  JSON.stringify({
+                    message: "User Login successful",
+                    token,
+                    user,
+                  })
                 );
               }
               // // Verify the token using the secret key
@@ -219,40 +254,50 @@ const server = http.createServer((req, res) => {
         res.writeHead(400, { "Content-Type": "application/json" });
         res.end(JSON.stringify({ message: "Invalid JSON data" }));
       }
-    } else if (req.url === "/deleteUser" && req.method === "DELETE") {
-      let requestBody = "";
+    } else if (
+      pathname.startsWith("/deleteUsers/") &&
+      req.method === "DELETE"
+    ) {
+      const profileIdToDelete = pathname.split("/")[2];
 
-      req.on("data", (chunk) => {
-        requestBody += chunk;
-      });
+      try {
+        const userIndex = users.findIndex(
+          (user) => user.email === profileIdToDelete
+        );
 
-      req.on("end", () => {
-        try {
-          const deleteInfo = JSON.parse(requestBody);
-          const emailToDelete = deleteInfo.email;
-
-          const userIndex = users.findIndex(
-            (user) => user.email === emailToDelete
+        if (userIndex !== -1) {
+          const projectsToDelete = projectData.filter(
+            (project) => project.username === profileIdToDelete
           );
-
-          if (userIndex !== -1) {
-            users.splice(userIndex, 1);
-
-            res.writeHead(200, { "Content-Type": "application/json" });
-            res.end(
-              JSON.stringify({ message: "User deleted successfully", users })
+          projectsToDelete.forEach((project) => {
+            const projectIndex = projectData.findIndex(
+              (pro) => pro.projectId === project.projectId
             );
-          } else {
-            res.writeHead(404, { "Content-Type": "application/json" });
-            res.end(JSON.stringify({ message: "User not found" }));
-          }
-        } catch (error) {
-          console.error("Error parsing JSON:", error);
-          res.writeHead(400, { "Content-Type": "application/json" });
-          res.end(JSON.stringify({ message: "Invalid JSON data" }));
+            if (projectIndex !== -1) {
+              projectData.splice(projectIndex, 1);
+            }
+          });
+
+          users.splice(userIndex, 1);
+
+          res.writeHead(200, { "Content-Type": "application/json" });
+          res.end(
+            JSON.stringify({
+              message: "User and his projects deleted successfully",
+              users,
+            })
+          );
+        } else {
+          res.writeHead(404, { "Content-Type": "application/json" });
+          res.end(JSON.stringify({ message: "User not found" }));
         }
-      });
-    } else if (req.url === "/editUserRole" && req.method === "PUT") {
+      } catch (error) {
+        console.error("Error parsing JSON:", error);
+        res.writeHead(400, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ message: "Invalid JSON data" }));
+      }
+    } else if (pathname.startsWith("/adminUsers/") && req.method === "PUT") {
+      const profileIdToUpdate = pathname.split("/")[2];
       let requestBody = "";
 
       req.on("data", (chunk) => {
@@ -263,7 +308,7 @@ const server = http.createServer((req, res) => {
         try {
           const editInfo = JSON.parse(requestBody);
 
-          const userInputFields = ["email", "role"];
+          const userInputFields = ["role"];
           const missingFields = userInputFields.filter(
             (field) => !editInfo.hasOwnProperty(field)
           );
@@ -282,9 +327,8 @@ const server = http.createServer((req, res) => {
             return;
           }
 
-          const emailToEdit = editInfo.email;
           const newRole = editInfo.role;
-          console.log(emailToEdit);
+          console.log(profileIdToUpdate);
           if (newRole === "") {
             console.log("Required fields are missing:  ");
             res.writeHead(400, { "Content-Type": "application/json" });
@@ -295,7 +339,9 @@ const server = http.createServer((req, res) => {
             );
             return;
           }
-          const userToEdit = users.find((user) => user.email === emailToEdit);
+          const userToEdit = users.find(
+            (user) => user.email === profileIdToUpdate
+          );
 
           if (userToEdit) {
             userToEdit.role = newRole;
@@ -304,6 +350,7 @@ const server = http.createServer((req, res) => {
             res.end(
               JSON.stringify({
                 message: "User role updated successfully",
+                userToEdit,
                 users,
               })
             );
@@ -392,7 +439,8 @@ const server = http.createServer((req, res) => {
           res.end(JSON.stringify({ message: "Invalid JSON data" }));
         }
       });
-    } else if (req.url === "/updateProfile" && req.method === "PUT") {
+    } else if (pathname.startsWith("/profileUpdate/") && req.method === "PUT") {
+      const profileIdToUpdate = pathname.split("/")[2];
       let requestBody = "";
       req.on("data", (chunk) => {
         requestBody += chunk;
@@ -408,8 +456,6 @@ const server = http.createServer((req, res) => {
             "password",
             "phoneNumber",
             "skills",
-            "experience",
-            "education",
           ];
           const missingFields = userInputFields.filter(
             (field) => !updatedInfo.hasOwnProperty(field)
@@ -430,35 +476,31 @@ const server = http.createServer((req, res) => {
           }
 
           // check fields empty na ho
-          if (
-            !updatedInfo.email ||
-            !updatedInfo.name ||
-            !updatedInfo.password ||
-            !updatedInfo.phoneNumber ||
-            updatedInfo.skills.length === 0 ||
-            updatedInfo.experience.length === 0 ||
-            updatedInfo.education.length === 0
-          ) {
-            res.writeHead(400, { "Content-Type": "application/json" });
-            return res.end(
-              JSON.stringify({
-                message:
-                  "All fields are required fields for updating the profile.",
-              })
-            );
-          }
+          // if (
+          //   !updatedInfo.email ||
+          //   !updatedInfo.name ||
+          //   !updatedInfo.password ||
+          //   !updatedInfo.phoneNumber ||
+          //   updatedInfo.skills.length === 0
+          // ) {
+          //   res.writeHead(400, { "Content-Type": "application/json" });
+          //   return res.end(
+          //     JSON.stringify({
+          //       message:
+          //         "All fields are required fields for updating the profile.",
+          //     })
+          //   );
+          // }
 
           const userIndex = users.findIndex(
-            (user) => user.email === updatedInfo.email
+            (user) => user.email === profileIdToUpdate
           );
 
           if (userIndex !== -1) {
             users[userIndex].name = updatedInfo.name;
-            users[userIndex].education = updatedInfo.education || [];
+            users[userIndex].password = updatedInfo.password;
             users[userIndex].phoneNumber = updatedInfo.phoneNumber || "";
-            users[userIndex].experience = updatedInfo.experience || [];
             users[userIndex].skills = updatedInfo.skills || [];
-
             res.writeHead(200, { "Content-Type": "application/json" });
             res.end(JSON.stringify({ message: "User updated successfully" }));
           } else {
@@ -475,6 +517,82 @@ const server = http.createServer((req, res) => {
           );
         }
       });
+    } else if (req.url === "/profileUpdate" && req.method === "GET") {
+      try {
+        res.writeHead(200, { "Content-Type": "application/json" });
+        res.end(JSON.stringify(users));
+      } catch (error) {
+        console.error("Error parsing JSON:", error);
+        res.writeHead(400, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ message: "Invalid JSON data" }));
+      }
+    } else if (req.url === "/addEduaction" && req.method === "POST") {
+      let requestBody = "";
+
+      req.on("data", (chunk) => {
+        requestBody += chunk;
+      });
+
+      req.on("end", () => {
+        try {
+          console.log(requestBody);
+          const newUser = JSON.parse(requestBody);
+          console.log(newUser);
+          // const userInputFields = [
+          //   "username",
+          //   "degree",
+          //   "institute",
+          //   "startDate",
+          //   "endDate",
+          // ];
+          // const missingFields = userInputFields.filter(
+          //   (field) => !newUser.hasOwnProperty(field)
+          // );
+
+          // if (missingFields.length > 0) {
+          //   console.log(
+          //     "Required fields are missing: " + missingFields.join(", ")
+          //   );
+          //   res.writeHead(400, { "Content-Type": "application/json" });
+          //   res.end(
+          //     JSON.stringify({
+          //       message:
+          //         "Required fields are missing: " + missingFields.join(", "),
+          //     })
+          //   );
+          //   return;
+          // }
+          // if (
+          //   newUser.degree === "" ||
+          //   newUser.university === "" ||
+          //   newUser.startDate === "" ||
+          //   newUser.EndDate === ""
+          // ) {
+          //   console.log("All fields required");
+          //   res.writeHead(400, { "Content-Type": "application/json" });
+          //   res.end(
+          //     JSON.stringify({
+          //       message: "All fields required: ",
+          //     })
+          //   );
+          //   return;
+          // }
+
+          const eduId = uuidv4();
+          console.log(eduId);
+          const educationWithId = { eduId, ...newUser };
+          education.push(educationWithId);
+
+          res.writeHead(200, { "Content-Type": "application/json" });
+          res.end(
+            JSON.stringify({ message: "user added successfully", education })
+          );
+        } catch (error) {
+          console.error("Error parsing JSON:", error);
+          res.writeHead(400, { "Content-Type": "application/json" });
+          res.end(JSON.stringify({ message: "Invalid JSON data" }));
+        }
+      });
     } else if (req.url === "/projects" && req.method === "GET") {
       try {
         res.writeHead(200, { "Content-Type": "application/json" });
@@ -486,6 +604,20 @@ const server = http.createServer((req, res) => {
         res.end(
           JSON.stringify({
             message: "project Data not found ",
+          })
+        );
+      }
+    } else if (req.url === "/education" && req.method === "GET") {
+      try {
+        res.writeHead(200, { "Content-Type": "application/json" });
+        res.write(JSON.stringify(education));
+        res.end();
+      } catch (error) {
+        console.error("Data not found ", error);
+        res.writeHead(400, { "Content-Type": "application/json" });
+        res.end(
+          JSON.stringify({
+            message: "education Data not found ",
           })
         );
       }
@@ -561,7 +693,7 @@ const server = http.createServer((req, res) => {
               (user) => user.email === newUserProject.username
             );
 
-            if (!userExists || !userExists.token) {
+            if (!userExists) {
               res.writeHead(400, { "Content-Type": "application/json" });
               res.end(
                 JSON.stringify({
@@ -606,7 +738,7 @@ const server = http.createServer((req, res) => {
         );
         console.log(userExists.email);
 
-        if (!userExists || !userExists.token) {
+        if (!userExists) {
           res.writeHead(400, { "Content-Type": "application/json" });
           res.end(
             JSON.stringify({
@@ -698,11 +830,11 @@ const server = http.createServer((req, res) => {
             (user) => user.email === projectData[projectIndex].username
           );
 
-          if (!userExists || !userExists.token) {
+          if (!userExists) {
             res.writeHead(400, { "Content-Type": "application/json" });
             res.end(
               JSON.stringify({
-                message: "User not logged in",
+                message: "User not Found",
               })
             );
             return;
@@ -743,6 +875,277 @@ const server = http.createServer((req, res) => {
           );
         }
       });
+    } else if (
+      pathname.startsWith("/educationUpdate/") &&
+      req.method === "PUT"
+    ) {
+      const projectIdToUpdate = pathname.split("/")[2];
+      let requestBody = "";
+
+      req.on("data", (chunk) => {
+        requestBody += chunk;
+      });
+
+      req.on("end", () => {
+        try {
+          const updatedInfo = JSON.parse(requestBody);
+
+          const userInputFields = [
+            "eduId",
+            "degree",
+            "university",
+            "startDate",
+            "EndDate",
+          ];
+          const missingFields = userInputFields.filter(
+            (field) => !updatedInfo.hasOwnProperty(field)
+          );
+
+          if (missingFields.length > 0) {
+            res.writeHead(400, { "Content-Type": "application/json" });
+            res.end(
+              JSON.stringify({
+                message:
+                  "Required fields are missing: " + missingFields.join(", "),
+              })
+            );
+            return;
+          }
+
+          // Check if fields are empty
+          // if (
+          //   !updatedInfo.title.trim() ||
+          //   !updatedInfo.description.trim() ||
+          //   updatedInfo.tags.length === 0 ||
+          //   !updatedInfo.img.trim() ||
+          //   updatedInfo.languages.length === 0 ||
+          //   updatedInfo.technology.length === 0
+          // ) {
+          //   res.writeHead(400, { "Content-Type": "application/json" });
+          //   res.end(
+          //     JSON.stringify({
+          //       message:
+          //         "All fields are required fields for updating the project.",
+          //     })
+          //   );
+          //   return;
+          // }
+
+          const projectIndex = education.findIndex(
+            (project) => project.eduId === projectIdToUpdate
+          );
+          //Check user authentication
+          // const userExists = education.find(
+          //   (user) => user.email === projectData[projectIndex].username
+          // );
+
+          // if (!userExists || !userExists.token) {
+          //   res.writeHead(400, { "Content-Type": "application/json" });
+          //   res.end(
+          //     JSON.stringify({
+          //       message: "User not logged in",
+          //     })
+          //   );
+          //   return;
+          // }
+          console.log(projectIndex);
+          if (projectIndex !== -1) {
+            const updatedProject = {
+              username: updatedInfo.username,
+              eduId: projectIdToUpdate,
+              degree: updatedInfo.degree,
+              university: updatedInfo.university,
+              startDate: updatedInfo.startDate,
+              EndDate: updatedInfo.EndDate,
+            };
+
+            education[projectIndex] = updatedProject;
+
+            res.writeHead(200, { "Content-Type": "application/json" });
+            res.end(
+              JSON.stringify({
+                message: "Project updated successfully",
+                updated_Project: updatedProject,
+                all_Projects: education,
+              })
+            );
+          } else {
+            res.writeHead(404, { "Content-Type": "application/json" });
+            res.end(JSON.stringify({ message: "Project not found" }));
+          }
+        } catch (error) {
+          console.error("Error parsing JSON:", error);
+          res.writeHead(400, { "Content-Type": "application/json" });
+          res.end(
+            JSON.stringify({
+              message: "Invalid JSON data. Error in parsing the request body.",
+            })
+          );
+        }
+      });
+    } else if (
+      pathname.startsWith("/educationDelete/") &&
+      req.method === "DELETE"
+    ) {
+      const DeleteIdToUpdate = pathname.split("/")[2];
+      console.log("DeleteIdToUpdate:" + DeleteIdToUpdate);
+
+      try {
+        const educationIndex = education.findIndex((user) => {
+          if (user.eduId === DeleteIdToUpdate) return user.eduId;
+        });
+        console.log(educationIndex);
+        console.log(educationIndex);
+        if (educationIndex !== -1) {
+          // Corrected variable name to educationIndex
+          education.splice(educationIndex, 1);
+
+          res.writeHead(200, { "Content-Type": "application/json" });
+          res.end(
+            JSON.stringify({
+              message: "Education deleted successfully",
+              education, // Is this variable defined? You might want to return education instead.
+            })
+          );
+        } else {
+          res.writeHead(404, { "Content-Type": "application/json" });
+          res.end(JSON.stringify({ message: "Education not found" }));
+        }
+      } catch (error) {
+        console.error("Error parsing JSON:", error);
+        res.writeHead(400, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ message: "Invalid JSON data" }));
+      }
+    } else if (req.url === "/addExperience" && req.method === "POST") {
+      let requestBody = "";
+
+      req.on("data", (chunk) => {
+        requestBody += chunk;
+      });
+
+      req.on("end", () => {
+        try {
+          console.log(requestBody);
+          const newExperience = JSON.parse(requestBody);
+          console.log(newExperience);
+
+          const expId = uuidv4();
+          console.log(expId);
+          const educationWithId = { expId, ...newExperience };
+          experience.push(educationWithId);
+
+          res.writeHead(200, { "Content-Type": "application/json" });
+          res.end(
+            JSON.stringify({ message: "user added successfully", experience })
+          );
+        } catch (error) {
+          console.error("Error parsing JSON:", error);
+          res.writeHead(400, { "Content-Type": "application/json" });
+          res.end(JSON.stringify({ message: "Invalid JSON data" }));
+        }
+      });
+    } else if (
+      pathname.startsWith("/experienceUpdate/") &&
+      req.method === "PUT"
+    ) {
+      const expIdToUpdate = pathname.split("/")[2];
+      let requestBody = "";
+      console.log(expIdToUpdate);
+      req.on("data", (chunk) => {
+        requestBody += chunk;
+      });
+
+      req.on("end", () => {
+        try {
+          const updatedInfo = JSON.parse(requestBody);
+
+          // Check if fields are empty
+
+          const experienceIndex = experience.findIndex(
+            (project) => project.expId === expIdToUpdate
+          );
+
+          console.log(experienceIndex);
+          if (experienceIndex !== -1) {
+            const updatedExperience = {
+              username: updatedInfo.username,
+              expId: expIdToUpdate,
+              position: updatedInfo.position,
+              company: updatedInfo.company,
+              startDate: updatedInfo.startDate,
+              endDate: updatedInfo.endDate,
+            };
+
+            experience[experienceIndex] = updatedExperience;
+
+            res.writeHead(200, { "Content-Type": "application/json" });
+            res.end(
+              JSON.stringify({
+                message: "Project updated successfully",
+                experience,
+              })
+            );
+          } else {
+            res.writeHead(404, { "Content-Type": "application/json" });
+            res.end(JSON.stringify({ message: "Project not found" }));
+          }
+        } catch (error) {
+          console.error("Error parsing JSON:", error);
+          res.writeHead(400, { "Content-Type": "application/json" });
+          res.end(
+            JSON.stringify({
+              message: "Invalid JSON data. Error in parsing the request body.",
+            })
+          );
+        }
+      });
+    } else if (
+      pathname.startsWith("/experienceDelete/") &&
+      req.method === "DELETE"
+    ) {
+      const DeleteIdToUpdate = pathname.split("/")[2];
+      console.log("DeleteIdToUpdate:" + DeleteIdToUpdate);
+
+      try {
+        const expIndex = experience.findIndex((user) => {
+          if (user.expId === DeleteIdToUpdate) return user.expId;
+        });
+        console.log(expIndex);
+        console.log(expIndex);
+        if (expIndex !== -1) {
+          // Corrected variable name to educationIndex
+          experience.splice(expIndex, 1);
+
+          res.writeHead(200, { "Content-Type": "application/json" });
+          res.end(
+            JSON.stringify({
+              message: "experience deleted successfully",
+              experience, // Is this variable defined? You might want to return education instead.
+            })
+          );
+        } else {
+          res.writeHead(404, { "Content-Type": "application/json" });
+          res.end(JSON.stringify({ message: "Education not found" }));
+        }
+      } catch (error) {
+        console.error("Error parsing JSON:", error);
+        res.writeHead(400, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ message: "Invalid JSON data" }));
+      }
+    } else if (req.url === "/experience" && req.method === "GET") {
+      try {
+        res.writeHead(200, { "Content-Type": "application/json" });
+        res.write(JSON.stringify(experience));
+        res.end();
+      } catch (error) {
+        console.error("Data not found ", error);
+        res.writeHead(400, { "Content-Type": "application/json" });
+        res.end(
+          JSON.stringify({
+            message: "experience Data not found ",
+          })
+        );
+      }
     } else {
       res.writeHead(404, { "Content-Type": "text/plain" });
       res.end("Not Found");

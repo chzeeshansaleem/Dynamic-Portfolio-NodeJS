@@ -1,0 +1,18 @@
+[
+  {
+    "username": "zeeshan@gmail.com",
+    "eduId": "1",
+    "degree": "BSCS",
+    "university": "FAST",
+    "startDate": "08/03/2022",
+    "EndDate": "08/03/2022"
+  },
+  {
+    "username": "shani@gmail.com",
+    "eduId": "2",
+    "degree": "Bscs",
+    "university": "FAST",
+    "startDate": "08/03/2022",
+    "EndDate": "08/03/2022"
+  }
+]

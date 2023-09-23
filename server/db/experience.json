@@ -1,0 +1,18 @@
+[
+  {
+    "expId": "1",
+    "username": "zeeshan@gmail.com",
+    "position": "SE",
+    "company": "FocusTeck",
+    "startDate": "2019-08-03",
+    "endDate": "2019-08-03"
+  },
+  {
+    "expId": "2",
+    "username": "shani@gmail.com",
+    "position": "ASE",
+    "company": "FocusTeck",
+    "startDate": "2019-08-03",
+    "endDate": "2019-08-03"
+  }
+]

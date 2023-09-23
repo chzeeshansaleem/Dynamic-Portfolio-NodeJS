@@ -7,9 +7,22 @@
     "role": "admin"
   },
   {
-    " education": [],
+    "education": [],
     "email": "admin123@gmail.com",
-    "experience": [],
+    "experience": [
+      {
+        "designation": "ASE",
+        "company": "FocusTeck",
+        "startDate": "2019-08-03",
+        "EndDate": "2019-08-03"
+      },
+      {
+        "designation": "ASE",
+        "company": "FocusTeck",
+        "startDate": "2019-08-03",
+        "EndDate": "2019-08-03"
+      }
+    ],
     "name": "admin",
     "password": "12345",
     "phoneNumber": "123456",
@@ -17,9 +30,37 @@
     "skills": []
   },
   {
-    " education": [],
+    "education": [
+      {
+        "eduId": "1",
+        "degree": "BSCS",
+        "university": "FAST",
+        "startDate": "08/03/2022",
+        "EndDate": "08/03/2022"
+      },
+      {
+        "eduId": "1",
+        "degree": "Bscs",
+        "university": "FAST",
+        "startDate": "08/03/2022",
+        "EndDate": "08/03/2022"
+      }
+    ],
     "email": "zeeshan@gmail.com",
-    "experience": ["5year", "4year"],
+    "experience": [
+      {
+        "position": "ASE",
+        "company": "FocusTeck",
+        "startDate": "2019-08-03",
+        "endDate": "2019-08-03"
+      },
+      {
+        "position": "ASE",
+        "company": "FocusTeck",
+        "startDate": "2019-08-03",
+        "endDate": "2019-08-03"
+      }
+    ],
     "name": "zeeshan",
     "password": "12345",
     "phoneNumber": "0341",
@@ -27,7 +68,7 @@
     "skills": []
   },
   {
-    " education": [],
+    "education": [],
     "email": "shani@gmail.com",
     "experience": [],
     "name": "zeeshan",

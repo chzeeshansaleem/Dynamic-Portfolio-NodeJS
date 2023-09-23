@@ -6,17 +6,7 @@ if (!redirctadmin) {
   const url = "http://127.0.0.1:5500/Client/HTML/login.html";
   window.location.href = url;
 }
-var deta = null;
-const test1Data = async () =>
-  await fetch("http://localhost:8000/projects")
-    .then((res) => res.json())
-    .then((data) => {
-      console.log(data);
-    });
 
-test1Data();
-
-console.log(deta);
 const projectsContainer = document.querySelector(".projects");
 const modal = document.querySelector(".modal");
 const testData = async () =>
@@ -142,53 +132,61 @@ if (searchInput) {
   searchInput.addEventListener("input", searchProjects);
 }
 
-export function searchProjects() {
-  const filter = searchInput.value.trim().toUpperCase();
-  const projectRows = document.querySelectorAll(".ProjectRow");
+async function searchProjects() {
+  try {
+    const res = await fetch("http://localhost:8000/projects");
+    const projectData = await res.json();
+    console.log(projectData);
 
-  for (let i = 0; i < projectData.length; i++) {
-    const title = projectData[i].title.toUpperCase();
-    const description = projectData[i].description.toUpperCase();
+    const filter = searchInput.value.trim().toUpperCase();
+    const projectRows = document.querySelectorAll(".ProjectRow");
 
-    let tagsMatch = false;
-    let languagesMatch = false;
-    let technologiesMatch = false;
-    // tags search kr raha ha
-    for (let k = 0; k < projectData[i].tags.length; k++) {
-      const tag = projectData[i].tags[k].toUpperCase();
-      if (tag.includes(filter)) {
-        tagsMatch = true;
-        break;
+    for (let i = 0; i < projectData.length; i++) {
+      const title = projectData[i].title.toUpperCase();
+      const description = projectData[i].description.toUpperCase();
+
+      let tagsMatch = false;
+      let languagesMatch = false;
+      let technologiesMatch = false;
+      // tags search kr raha ha
+      for (let k = 0; k < projectData[i].tags.length; k++) {
+        const tag = projectData[i].tags[k].toUpperCase();
+        if (tag.includes(filter)) {
+          tagsMatch = true;
+          break;
+        }
+      }
+      // languange search kr raha ha
+      for (let k = 0; k < projectData[i].languages.length; k++) {
+        const language = projectData[i].languages[k].toUpperCase();
+        if (language.includes(filter)) {
+          languagesMatch = true;
+          break;
+        }
+      }
+      // technology ko search kr raha ha
+      for (let k = 0; k < projectData[i].technology.length; k++) {
+        const technology = projectData[i].technology[k].toUpperCase();
+        if (technology.includes(filter)) {
+          technologiesMatch = true;
+          break;
+        }
+      }
+
+      if (
+        title.includes(filter) ||
+        description.includes(filter) ||
+        tagsMatch ||
+        languagesMatch ||
+        technologiesMatch
+      ) {
+        projectRows[i].style.display = "";
+      } else {
+        projectRows[i].style.display = "none";
       }
     }
-    // languange search kr raha ha
-    for (let k = 0; k < projectData[i].languages.length; k++) {
-      const language = projectData[i].languages[k].toUpperCase();
-      if (language.includes(filter)) {
-        languagesMatch = true;
-        break;
-      }
-    }
-    // technology ko search kr raha ha
-    for (let k = 0; k < projectData[i].technology.length; k++) {
-      const technology = projectData[i].technology[k].toUpperCase();
-      if (technology.includes(filter)) {
-        technologiesMatch = true;
-        break;
-      }
-    }
-
-    if (
-      title.includes(filter) ||
-      description.includes(filter) ||
-      tagsMatch ||
-      languagesMatch ||
-      technologiesMatch
-    ) {
-      projectRows[i].style.display = "";
-    } else {
-      projectRows[i].style.display = "none";
-    }
+  } catch (error) {
+    console.log(error);
   }
 }
 

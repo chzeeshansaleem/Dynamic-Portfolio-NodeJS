@@ -30,15 +30,20 @@ async function handleLogin(e) {
       },
       body: JSON.stringify(user1), // Convert user object to JSON
     });
+    const result = await res.json();
+    // console.log(result);
 
     if (res.status === 200) {
       alert("User Login successfully");
-      localStorage.setItem("user", JSON.stringify(user1.email));
+      localStorage.setItem("user", JSON.stringify(result.user));
+      localStorage.setItem("token", JSON.stringify(result.token));
       const url = "http://127.0.0.1:5500/Client/HTML/index.html";
       window.location.href = url;
     } else if (res.status === 222) {
       alert("Admin Login successfully");
-      localStorage.setItem("admin", JSON.stringify(user1.email));
+      localStorage.setItem("admin", JSON.stringify(result.user));
+      localStorage.setItem("token", JSON.stringify(result.token));
+
       const url = "http://127.0.0.1:5500/Client/HTML/adminUsers.html";
       window.location.href = url;
     } else if (res.status === 204) {

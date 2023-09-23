@@ -19,7 +19,7 @@ if (!redirct && !redirctadmin) {
 
 // console.log(redirct);
 // const name = document.getElementById("username");
-// const uname = username.find((e) => e.email == redirct);
+// const uname = username.find((e) => e.email == redirct.name);
 // if (name) {
 //   name.textContent = uname.name;
 // }
@@ -33,7 +33,7 @@ const testData = async () =>
     .then((res) => res.json())
     .then((projectData) => {
       projectData.forEach((project) => {
-        if (project.username == redirct) {
+        if (project.username === redirct.email) {
           console.log(project.username);
 
           const projectRow = document.createElement("div");

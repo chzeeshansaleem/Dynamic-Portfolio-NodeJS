@@ -1,6 +1,6 @@
 //import userProjectData from "../db/projects.json" assert { type: "json" };
 import logout from "../JS/index.js";
-
+//ximport searchProjects from "../JS/AdminViewProjects.js";
 //console.log(userProjectData);
 const redirct = localStorage.getItem("user");
 if (!redirct) {
@@ -22,10 +22,12 @@ async function deleteUserProject(projectId) {
 
     if (response.status === 200) {
       // Project deleted successfully
-      console.log("Project deleted successfully");
+      alert("Project deleted successfully");
+      userpro();
     } else if (response.status === 404) {
       // Project not found
-      console.log("Project not found");
+      alert("Project not found");
+      userpro();
     } else {
       // Handle other possible error cases
       console.error("Error deleting project:", response.statusText);
@@ -34,19 +36,57 @@ async function deleteUserProject(projectId) {
     console.error("An error occurred:", error);
   }
 }
+const searchInput = document.getElementById("searchInput");
 
 async function userpro() {
   const userProjectsContainer = document.querySelector(".usersprojects");
   userProjectsContainer.innerHTML = "";
   const userModal = document.querySelector(".modalmodal");
   const userModalDetails = document.querySelector(".usermodalDetails");
-
+  const filter = searchInput.value.trim().toUpperCase();
   await fetch("http://localhost:8000/projects")
     .then((res) => res.json())
     .then((userProjectData) => {
       console.log(userProjectData);
+
+      console.log(searchInput.value);
+      //console.log("filter: " + filter);
       userProjectData.forEach((project) => {
-        if (user1 === project.username) {
+        let languagesMatch = false;
+        let technologiesMatch = false;
+        let tagsMatch = false;
+        for (let k = 0; k < project.languages.length; k++) {
+          const language = project.languages[k].toUpperCase();
+          if (language.includes(filter)) {
+            languagesMatch = true;
+            break;
+          }
+        }
+        for (let k = 0; k < project.technology.length; k++) {
+          const technology = project.technology[k].toUpperCase();
+          if (technology.includes(filter)) {
+            technologiesMatch = true;
+            break;
+          }
+        }
+
+        for (let k = 0; k < project.tags.length; k++) {
+          const technology = project.tags[k].toUpperCase();
+          if (technology.includes(filter)) {
+            tagsMatch = true;
+            break;
+          }
+        }
+        const matchesSearchCriteria =
+          (!filter ||
+            project.title.toUpperCase().includes(filter) ||
+            project.description.toUpperCase().includes(filter) ||
+            languagesMatch ||
+            tagsMatch ||
+            technologiesMatch) &&
+          user1.email === project.username;
+
+        if (matchesSearchCriteria) {
           const userProjectRow = document.createElement("div");
           userProjectRow.classList.add("userProjectRow");
           const userProjectDetails = document.createElement("div");
@@ -172,7 +212,7 @@ async function userpro() {
 
               console.log("after default edit project click submit");
               if (projectIndex !== -1) {
-                userProjectData[projectIndex].username = project.username;
+                userProjectData[projectIndex].username = user1.email;
                 userProjectData[projectIndex].title = editdata121.value;
                 userProjectData[projectIndex].description = editdata221.value;
                 userProjectData[projectIndex].img = editdata321.value;
@@ -228,30 +268,7 @@ async function userpro() {
           deleteProject.textContent = "delete";
           deleteProject.onclick = async function (e) {
             e.preventDefault();
-            try {
-              console.log(project.projectId);
-              const response = await fetch(
-                `http://localhost:8000/projects/${project.projectId}`,
-                {
-                  method: "DELETE",
-                }
-              );
-
-              if (response.status === 200) {
-                // Project deleted successfully
-                console.log("Project deleted successfully");
-              } else if (response.status === 400) {
-                // Project not found
-                alert("user not logged in");
-              } else {
-                // Handle other possible error cases
-                console.error("Error deleting project:", response.statusText);
-              }
-            } catch (error) {
-              console.error("An error occurred:", error);
-            }
-
-            userpro();
+            deleteUserProject(project.projectId);
           };
           userProjectBtn.appendChild(UserEditProject);
           userProjectBtn.appendChild(deleteProject);
@@ -270,6 +287,14 @@ async function userpro() {
       });
     });
 }
+searchInput.addEventListener("input", () => {
+  if (searchInput.value !== "") {
+    userpro();
+  } else {
+    userpro();
+  }
+});
+
 userpro();
 // add project function
 const addProjectFunction = document.querySelector(".addProjectBtn");
@@ -387,7 +412,7 @@ addProjectFunction.onclick = (e) => {
     e.preventDefault();
     console.log("after default add project click submit");
     const addprojectDataForm = {
-      username: user1,
+      username: user1.email,
 
       title: adddata121.value,
       description: adddata221.value,
@@ -433,37 +458,90 @@ addProjectFunction.onclick = (e) => {
   }
 };
 
-const searchInput = document.getElementById("searchInput");
+// const searchInput = document.getElementById("searchInput");
+// const filter = searchInput.value.trim().toUpperCase();
+// if (searchInput) {
+//   searchInput.addEventListener("input", searchProjects);
+// }
 
-if (searchInput) {
-  searchInput.addEventListener("input", searchProjects);
-}
+// async function searchProjects() {
+//   try {
+//     const res = await fetch("http://localhost:8000/projects");
+//     const projectData = await res.json();
+//     console.log(projectData);
 
-function searchProjects() {
-  const filter = searchInput.value.trim().toUpperCase();
-  const userProjectRow = document.querySelectorAll(".userProjectRow");
+//     const userProjectRow = document.querySelectorAll(".userProjectRow");
 
-  for (let i = 0; i < userProjectData.length; i++) {
-    const title = userProjectData[i].title.toUpperCase();
-    const description = userProjectData[i].description.toUpperCase();
-    // const tags = userProjectData[i].tags.toUpperCase();
-    // const languages = userProjectData[i].languages.toUpperCase();
-    // const Technologies = userProjectData[i].technology.toUpperCase();
+//     for (let i = 0; i < projectData.length; i++) {
+//       const title = projectData[i].title.toUpperCase();
+//       const description = projectData[i].description.toUpperCase();
+//       console.log("title: " + title);
+//       // let tagsMatch = false;
+//       // let languagesMatch = false;
+//       // let technologiesMatch = false;
+//       // // tags search kr raha ha
+//       // for (let k = 0; k < projectData[i].tags.length; k++) {
+//       //   const tag = projectData[i].tags[k].toUpperCase();
+//       //   if (tag.includes(filter)) {
+//       //     tagsMatch = true;
+//       //     break;
+//       //   }
+//       // }
+//       // // languange search kr raha ha
 
-    if (
-      title.includes(filter) ||
-      description.includes(filter)
-      //||
-      // tags.includes(filter) ||
-      // languages.includes(filter) ||
-      // Technologies.includes(filter)
-    ) {
-      userProjectRow[i].style.display = "";
-    } else {
-      userProjectRow[i].style.display = "none";
-    }
-  }
-}
+//       // // technology ko search kr raha ha
+//       // for (let k = 0; k < projectData[i].technology.length; k++) {
+//       //   const technology = projectData[i].technology[k].toUpperCase();
+//       //   if (technology.includes(filter)) {
+//       //     technologiesMatch = true;
+//       //     break;
+//       //   }
+//       // }
+
+//       if (
+//         title.includes(filter) ||
+//         description.includes(filter)
+//         //  ||
+//         // tagsMatch ||
+//         // languagesMatch ||
+//         // technologiesMatch
+//       ) {
+//         console.log(title.includes(filter));
+//         userProjectRow[i].style.display = "flex";
+//       } else {
+//         userProjectRow[i].style.display = "none";
+//       }
+//     }
+//   } catch (error) {
+//     console.log(error);
+//   }
+// }
+
+// function searchProjects() {
+//   const filter = searchInput.value.trim().toUpperCase();
+//   const userProjectRow = document.querySelectorAll(".userProjectRow");
+
+//   for (let i = 0; i < userProjectData.length; i++) {
+//     const title = userProjectData[i].title.toUpperCase();
+//     const description = userProjectData[i].description.toUpperCase();
+//     // const tags = userProjectData[i].tags.toUpperCase();
+//     // const languages = userProjectData[i].languages.toUpperCase();
+//     // const Technologies = userProjectData[i].technology.toUpperCase();
+
+//     if (
+//       title.includes(filter) ||
+//       description.includes(filter)
+//       //||
+//       // tags.includes(filter) ||
+//       // languages.includes(filter) ||
+//       // Technologies.includes(filter)
+//     ) {
+//       userProjectRow[i].style.display = "";
+//     } else {
+//       userProjectRow[i].style.display = "none";
+//     }
+//   }
+// }
 const logoutbtn = document.getElementById("logout");
 // Logout button for admin and user
 if (logoutbtn) {
