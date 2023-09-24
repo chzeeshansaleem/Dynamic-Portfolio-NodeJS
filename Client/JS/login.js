@@ -1,6 +1,3 @@
-import users from "../db/user.json" assert { type: "json" };
-// functions
-//var users = JSON.parse(localStorage.getItem("users")) || [];
 const redirct = localStorage.getItem("user");
 const redirctadmin = localStorage.getItem("admin");
 if (redirct) {
@@ -13,6 +10,19 @@ if (redirct) {
   const url2 = "http://127.0.0.1:5500/Client/HTML/adminProject.html";
   window.location.href = url || url2;
 }
+function ValidationInputByRegex(inputElement, regex) {
+  inputElement.addEventListener("input", function (event) {
+    const inputValue = event.target.value;
+
+    if (regex.test(inputValue)) {
+      event.target.value = inputValue.replace(regex, "");
+    }
+  });
+}
+const emailInput = document.getElementById("loginemail");
+const emailRegex = /[^a-zA-Z0-9@._-]/g;
+ValidationInputByRegex(emailInput, emailRegex);
+
 async function handleLogin(e) {
   e.preventDefault();
   const email = document.getElementById("loginemail").value;

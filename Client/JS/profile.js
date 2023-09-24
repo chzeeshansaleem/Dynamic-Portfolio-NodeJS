@@ -10,6 +10,16 @@ if (!redirct) {
 
 var loginUser = JSON.parse(localStorage.getItem("user"));
 console.log("Login User: " + loginUser);
+// validation func
+function ValidationInputByRegex(inputElement, regex) {
+  inputElement.addEventListener("input", function (event) {
+    const inputValue = event.target.value;
+
+    if (regex.test(inputValue)) {
+      event.target.value = inputValue.replace(regex, "");
+    }
+  });
+}
 
 // showing user profile
 async function userProfile() {
@@ -140,6 +150,8 @@ function createEducationEditForm(educationItem, index) {
   const degreeLabel = document.createElement("label");
   degreeLabel.textContent = "Degree:";
   const degreeInput = document.createElement("input");
+  const degreeInputRegex = /[^a-zA-Z0-9\s]/g;
+  ValidationInputByRegex(degreeInput, degreeInputRegex);
   degreeInput.type = "text";
   degreeInput.id = "editDegree";
   degreeInput.value = educationItem.degree;
@@ -148,6 +160,8 @@ function createEducationEditForm(educationItem, index) {
   const universityLabel = document.createElement("label");
   universityLabel.textContent = "University:";
   const universityInput = document.createElement("input");
+  const universityInputRegex = /[^a-zA-Z0-9\s]/g;
+  ValidationInputByRegex(universityInput, universityInputRegex);
   universityInput.type = "text";
   universityInput.id = "editUniversity";
   universityInput.value = educationItem.university;
@@ -159,15 +173,71 @@ function createEducationEditForm(educationItem, index) {
   startDateInput.type = "date";
   startDateInput.id = "editStartDate";
   startDateInput.valueAsDate = new Date(educationItem.startDate);
+  // Date validation
+  startDateInput.addEventListener("input", function (event) {
+    const inputValue = event.target.value;
+    const dateParts = inputValue.split("-");
 
+    if (dateParts.length === 3) {
+      const year = parseInt(dateParts[0]);
+      const month = parseInt(dateParts[1]);
+      const day = parseInt(dateParts[2]);
+
+      if (year > 9999) {
+        event.target.value = "9999-";
+        return;
+      }
+      if (month > 12) {
+        event.target.value = `${year}-12-`;
+        return;
+      }
+
+      if (day > 31) {
+        event.target.value = `${year}-${month}-31`;
+        return;
+      }
+    }
+
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(inputValue)) {
+      event.target.value = "";
+    }
+  });
   // Create end date input field
   const endDateLabel = document.createElement("label");
   endDateLabel.textContent = "End Date:";
   const endDateInput = document.createElement("input");
   endDateInput.type = "date";
   endDateInput.id = "editEndDate";
-  endDateInput.valueAsDate = new Date(educationItem.EndDate);
+  endDateInput.valueAsDate = new Date(educationItem.endDate);
+  // Date validation
+  endDateInput.addEventListener("input", function (event) {
+    const inputValue = event.target.value;
+    const dateParts = inputValue.split("-");
 
+    if (dateParts.length === 3) {
+      const year = parseInt(dateParts[0]);
+      const month = parseInt(dateParts[1]);
+      const day = parseInt(dateParts[2]);
+
+      if (year > 9999) {
+        event.target.value = "9999-";
+        return;
+      }
+      if (month > 12) {
+        event.target.value = `${year}-12-`;
+        return;
+      }
+
+      if (day > 31) {
+        event.target.value = `${year}-${month}-31`;
+        return;
+      }
+    }
+
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(inputValue)) {
+      event.target.value = "";
+    }
+  });
   // Create Save button
   const saveButton = document.createElement("button");
   saveButton.textContent = "Save";
@@ -208,7 +278,7 @@ function createEducationEditForm(educationItem, index) {
         degree: updatedDegree,
         university: updatedUniversity,
         startDate: updatedStartDate,
-        EndDate: updatedEndDate,
+        endDate: updatedEndDate,
       };
       console.log(updatedEducationItem);
       const res = await fetch(
@@ -304,7 +374,7 @@ async function createEducationTable() {
       const startDateCell = document.createElement("td");
       startDateCell.textContent = item.startDate;
       const endDateCell = document.createElement("td");
-      endDateCell.textContent = item.EndDate;
+      endDateCell.textContent = item.endDate;
       const editCell = document.createElement("td");
 
       const editButton = document.createElement("button");
@@ -387,6 +457,8 @@ function createExperienceEditForm(experienceItem, index) {
   const positionLabel = document.createElement("label");
   positionLabel.textContent = "Position:";
   const positionInput = document.createElement("input");
+  const positionInputRegex = /[^a-zA-Z0-9\s]/g;
+  ValidationInputByRegex(positionInput, positionInputRegex);
   positionInput.type = "text";
   positionInput.id = "editPosition";
   positionInput.value = experienceItem.position;
@@ -395,6 +467,8 @@ function createExperienceEditForm(experienceItem, index) {
   const companyLabel = document.createElement("label");
   companyLabel.textContent = "Company:";
   const companyInput = document.createElement("input");
+  const companyInputRegex = /[^a-zA-Z0-9\s]/g;
+  ValidationInputByRegex(companyInput, companyInputRegex);
   companyInput.type = "text";
   companyInput.id = "editCompany";
   companyInput.value = experienceItem.company;
@@ -406,6 +480,34 @@ function createExperienceEditForm(experienceItem, index) {
   startDateInput.type = "date";
   startDateInput.id = "editStartDate";
   startDateInput.valueAsDate = new Date(experienceItem.startDate);
+  startDateInput.addEventListener("input", function (event) {
+    const inputValue = event.target.value;
+    const dateParts = inputValue.split("-");
+
+    if (dateParts.length === 3) {
+      const year = parseInt(dateParts[0]);
+      const month = parseInt(dateParts[1]);
+      const day = parseInt(dateParts[2]);
+
+      if (year > 9999) {
+        event.target.value = "9999-";
+        return;
+      }
+      if (month > 12) {
+        event.target.value = `${year}-12-`;
+        return;
+      }
+
+      if (day > 31) {
+        event.target.value = `${year}-${month}-31`;
+        return;
+      }
+    }
+
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(inputValue)) {
+      event.target.value = "";
+    }
+  });
 
   //  end date input field
   const endDateLabel = document.createElement("label");
@@ -414,7 +516,35 @@ function createExperienceEditForm(experienceItem, index) {
   endDateInput.type = "date";
   endDateInput.id = "editEndDate";
   endDateInput.valueAsDate = new Date(experienceItem.endDate);
+  // date validation
+  endDateInput.addEventListener("input", function (event) {
+    const inputValue = event.target.value;
+    const dateParts = inputValue.split("-");
 
+    if (dateParts.length === 3) {
+      const year = parseInt(dateParts[0]);
+      const month = parseInt(dateParts[1]);
+      const day = parseInt(dateParts[2]);
+
+      if (year > 9999) {
+        event.target.value = "9999-";
+        return;
+      }
+      if (month > 12) {
+        event.target.value = `${year}-12-`;
+        return;
+      }
+
+      if (day > 31) {
+        event.target.value = `${year}-${month}-31`;
+        return;
+      }
+    }
+
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(inputValue)) {
+      event.target.value = "";
+    }
+  });
   //  Save button
   const saveButton = document.createElement("button");
   saveButton.textContent = "Save";
@@ -467,13 +597,20 @@ function createExperienceEditForm(experienceItem, index) {
           body: JSON.stringify(updatedExperienceItem),
         }
       );
-
+      console.log(res);
       if (res.status === 200) {
         // Successfully updated the education item on the server
         alert("Experience item updated successfully");
-      } else {
+      } else if (res.status === 400) {
+        // Successfully updated the education item on the server
+        alert("fields are empty");
+        return;
+      } else if (res.status === 403) {
         // Handle error cases here
-        alert("Failed to update experience item");
+        alert("user not logged in");
+        return;
+      } else {
+        alert("server error: " + res.status);
       }
 
       // Update the experience data in the user's experience array
@@ -624,311 +761,6 @@ createEducationTable();
 createExperienceTable();
 const editProfile = document.querySelector(".editProfile");
 if (editProfile) {
-  // editProfile.onclick =   async function () {
-  //   const modal = document.querySelector(".modal");
-  //   if (modal) {
-  //     modal.style.display = "block";
-  //     modal.style.backgroundColor = "white";
-  //     modal.style.width = "60%";
-  //     modal.style.height = "80%";
-  //     modal.style.overflowY = "auto";
-  //     modal.style.overflowX = "hidden";
-  //     modal.style.marginLeft = "10%";
-  //   }
-  //   const MainContentOfProject = document.querySelector(
-  //     ".MainContentOfProject"
-  //   );
-  //   MainContentOfProject.innerHTML = "";
-
-  //   const editform = document.createElement("form");
-
-  //   const editTable = document.createElement("table");
-  //   const editrow1 = document.createElement("tr");
-  //   const editrow2 = document.createElement("tr");
-  //   const editrow3 = document.createElement("tr");
-  //   const editrow4 = document.createElement("tr");
-  //   const editrow5 = document.createElement("tr");
-  //   const editrow6 = document.createElement("tr");
-  //   const editdata11 = document.createElement("td");
-  //   const editdata12 = document.createElement("td");
-  //   const editdata121 = document.createElement("input");
-  //   editdata121.addEventListener("input", function (event) {
-  //     const inputValue = event.target.value;
-  //     const regex = /[^a-zA-Z\s]/g;
-
-  //     if (regex.test(inputValue)) {
-  //       event.target.value = inputValue.replace(/[^a-zA-Z\s]/g, "");
-  //     }
-  //   });
-
-  //   const editdata21 = document.createElement("td");
-  //   const editdata22 = document.createElement("td");
-  //   const editdata221 = document.createElement("input");
-  //   const editdata31 = document.createElement("td");
-  //   const editdata32 = document.createElement("td");
-  //   const editdata321 = document.createElement("input");
-  //   editdata321.addEventListener("input", function (event) {
-  //     const inputValue = event.target.value;
-  //     const regex = /[^0-9]/g;
-
-  //     if (regex.test(inputValue)) {
-  //       event.target.value = inputValue.replace(/[^0-9]/g, "");
-  //     }
-  //   });
-
-  //   const editdata41 = document.createElement("td");
-  //   const editdata42 = document.createElement("td");
-  //   editdata42.style.display = "flex";
-  //   editdata42.style.flexDirection = "column";
-  //   const inputEditFields = document.createElement("div");
-  //   inputEditFields.style.display = "";
-  //   const editdata421 = document.createElement("input");
-  //   editdata421.placeholder = "Degree";
-  //   const editdata422 = document.createElement("input");
-  //   editdata422.placeholder = "Institute";
-  //   const editdata423 = document.createElement("input");
-  //   editdata423.type = "date";
-  //   editdata423.placeholder = "Starting Date";
-  //   const editdata424 = document.createElement("input");
-  //   editdata424.type = "date";
-  //   editdata424.placeholder = "Ending Date"; // Add a placeholder for ending date
-  //   const presentStatusLabel = document.createElement("label");
-
-  //   // presentStatusLabel.style.marginTop = "100px";
-  //   // Create a label for present status
-
-  //   presentStatusLabel.textContent = "Present Status";
-  //   const presentStatusInput = document.createElement("input");
-  //   presentStatusInput.style.margin = "-22px 20%";
-  //   presentStatusInput.type = "checkbox"; // Use a checkbox for present status
-  //   presentStatusInput.id = "presentStatus"; // Add an ID for the input
-  //   inputEditFields.appendChild(editdata421);
-  //   inputEditFields.appendChild(editdata422);
-  //   inputEditFields.appendChild(editdata423);
-  //   inputEditFields.appendChild(editdata424);
-  //   inputEditFields.appendChild(presentStatusLabel);
-  //   inputEditFields.appendChild(presentStatusInput);
-  //   //inputEditFields.appendChild(presentStatusText);
-
-  //   presentStatusInput.addEventListener("change", () => {
-  //     if (presentStatusInput.checked) {
-  //       editdata424.disabled = true;
-  //       editdata424.value = "present";
-  //     } else {
-  //       editdata424.disabled = false;
-  //     }
-  //   });
-
-  //   const SaveEduBtn = document.createElement("input");
-  //   inputEditFields.appendChild(editdata421);
-  //   inputEditFields.appendChild(editdata422);
-  //   inputEditFields.appendChild(editdata423);
-  //   inputEditFields.appendChild(editdata424);
-  //   inputEditFields.appendChild(SaveEduBtn);
-  //   const showdatass = document.createElement("div");
-  //   const showEducation1 = document.createElement("ul");
-
-  //   createEducationTable();
-
-  //   // editEducation.textContent = "Edit";
-  //   SaveEduBtn.type = "button";
-  //   SaveEduBtn.value = "Add Education";
-
-  //   // /////  New education ki entry save kro
-  //   SaveEduBtn.onclick = function () {
-  //     // Create a new education object based on the input fields
-  //     const newEducationItem = {
-  //       eduId: 56,
-  //       degree: editdata421.value,
-  //       university: editdata422.value,
-  //       startDate: editdata423.value,
-  //       EndDate: editdata424.value,
-  //     };
-  //     user1.education.push(newEducationItem);
-
-  //     //reseet fields
-  //     editdata421.value = "";
-  //     editdata422.value = "";
-  //     editdata423.value = "";
-  //     editdata424.value = "";
-
-  //     //call function for show
-  //     createEducationTable();
-  //   };
-  //   // showEducation.appendChild(editEducation);
-  //   showdatass.appendChild(showEducation1);
-
-  //   editdata421.addEventListener("input", function (event) {
-  //     const inputValue = event.target.value;
-  //     const regex = /[^a-zA-Z\s]/;
-  //     if (regex.test(inputValue)) {
-  //       event.target.value = inputValue.replace(/[^a-zA-Z\s,]/, "");
-  //     }
-  //   });
-
-  //   const editdata61 = document.createElement("td");
-  //   const editdata62 = document.createElement("td");
-  //   editdata62.style.display = "flex";
-  //   editdata62.style.flexDirection = "column";
-  //   const experEditFields = document.createElement("div");
-  //   inputEditFields.style.display = "";
-  //   const editdata621 = document.createElement("input");
-  //   editdata621.placeholder = "Position";
-  //   const editdata622 = document.createElement("input");
-  //   editdata622.placeholder = "company";
-  //   const editdata623 = document.createElement("input");
-  //   editdata623.type = "date";
-  //   editdata423.placeholder = "Starting Date";
-  //   const editdata624 = document.createElement("input");
-  //   editdata624.type = "date";
-  //   editdata624.placeholder = "Ending Date"; // Add a placeholder for ending date
-  //   const presentStatusLabelExp = document.createElement("label");
-
-  //   // presentStatusLabel.style.marginTop = "100px";
-  //   // Create a label for present status
-
-  //   presentStatusLabelExp.textContent = "Present Status";
-  //   const presentStatusInputexp = document.createElement("input");
-  //   presentStatusInputexp.style.margin = "-22px 20%";
-  //   presentStatusInputexp.type = "checkbox"; // Use a checkbox for present status
-  //   presentStatusInputexp.id = "presentStatus"; // Add an ID for the input
-  //   experEditFields.appendChild(editdata621);
-  //   experEditFields.appendChild(editdata622);
-  //   experEditFields.appendChild(editdata623);
-  //   experEditFields.appendChild(editdata624);
-  //   experEditFields.appendChild(presentStatusLabelExp);
-  //   experEditFields.appendChild(presentStatusInputexp);
-  //   //inputEditFields.appendChild(presentStatusText);
-
-  //   presentStatusInput.addEventListener("change", () => {
-  //     if (presentStatusInput.checked) {
-  //       editdata624.disabled = true;
-  //       editdata624.value = "present";
-  //     } else {
-  //       editdata624.disabled = false;
-  //     }
-  //   });
-
-  //   const SaveExpBtn = document.createElement("input");
-  //   experEditFields.appendChild(editdata621);
-  //   experEditFields.appendChild(editdata622);
-  //   experEditFields.appendChild(editdata623);
-  //   experEditFields.appendChild(editdata624);
-  //   experEditFields.appendChild(SaveExpBtn);
-  //   const showdataExp = document.createElement("div");
-  //   const showExp1 = document.createElement("ul");
-
-  //   createEducationTable();
-
-  //   SaveExpBtn.type = "button";
-  //   SaveExpBtn.value = "Add Education";
-
-  //   // /////  New exper ki entry save kro
-  //   SaveExpBtn.onclick = function () {
-  //     // Create a new exp object based on the input fields
-  //     const newExperienceItem = {
-  //       expId: 56,
-  //       position: editdata621.value,
-  //       company: editdata622.value,
-  //       startDate: editdata623.value,
-  //       EndDate: editdata624.value,
-  //     };
-  //     user1.experience.push(newExperienceItem);
-
-  //     //reseet fields
-  //     editdata621.value = "";
-  //     editdata622.value = "";
-  //     editdata623.value = "";
-  //     editdata624.value = "";
-
-  //     //call function for show
-  //     createExperienceTable();
-  //   };
-  //   showdataExp.appendChild(showExp1);
-
-  //   const editdata51 = document.createElement("td");
-  //   const editdata52 = document.createElement("td");
-  //   const editdata521 = document.createElement("input");
-  //   editdata521.addEventListener("input", function (event) {
-  //     const inputValue = event.target.value;
-  //     const regex = /[^a-zA-Z0-9\s,]/;
-
-  //     if (regex.test(inputValue)) {
-  //       event.target.value = inputValue.replace(/[^a-zA-Z0-9\s,]/, "");
-  //     }
-  //   });
-
-  //   editdata11.textContent = "Name:";
-  //   editdata121.value = user1.name;
-  //   editdata21.textContent = "password:";
-  //   editdata221.value = user1.password;
-  //   editdata31.textContent = "phone:";
-  //   editdata321.value = user1.phoneNumber;
-  //   editdata41.textContent = "Education";
-  //   editdata421.value = "";
-
-  //   editdata51.textContent = "Skills:";
-  //   editdata521.value = user1.skills;
-  //   editdata61.textContent = "Experince:";
-
-  //   editdata62.appendChild(experEditFields); //2nd td
-  //   editdata52.appendChild(editdata521); //2nd td
-
-  //   editdata42.appendChild(inputEditFields);
-  //   editdata42.appendChild(showdatass);
-
-  //   editdata32.appendChild(editdata321); //2nd td
-  //   editdata22.appendChild(editdata221); //2nd td
-  //   editdata12.appendChild(editdata121); //2nd td
-  //   editrow1.appendChild(editdata11);
-  //   editrow1.appendChild(editdata12);
-  //   editrow2.appendChild(editdata21);
-  //   editrow2.appendChild(editdata22);
-  //   editrow3.appendChild(editdata31);
-  //   editrow3.appendChild(editdata32);
-  //   editrow4.appendChild(editdata41);
-  //   editrow4.appendChild(editdata42);
-  //   editrow5.appendChild(editdata51);
-  //   editrow5.appendChild(editdata52);
-  //   editrow6.appendChild(editdata61);
-  //   editrow6.appendChild(editdata62);
-  //   editTable.appendChild(editrow1);
-  //   editTable.appendChild(editrow2);
-  //   editTable.appendChild(editrow3);
-  //   editTable.appendChild(editrow4);
-  //   editTable.appendChild(editrow5);
-  //   editTable.appendChild(editrow6);
-  //   editform.appendChild(editTable);
-  //   const savebtn = document.createElement("button");
-  //   savebtn.textContent = "Save";
-  //   savebtn.type = "submit";
-  //   const cancelEdit = document.getElementById("crossprofile");
-  //   cancelEdit.onclick = function () {
-  //     modal.style.display = "none";
-  //   };
-  //   editform.appendChild(savebtn);
-  //   MainContentOfProject.appendChild(editform);
-  //   savebtn.onclick = function (e) {
-  //     e.preventDefault();
-  //     console.log("after default click submit");
-  //     const userindex = users.findIndex((u) => u.email === loginUser);
-  //     if (userindex !== -1) {
-  //       users[userindex].name = editdata121.value;
-  //       if (editdata221.value == "") {
-  //         alert("Please enter Passwords");
-  //       } else {
-  //         users[userindex].password = editdata221.value;
-  //       }
-  //       users[userindex].phoneNumber = editdata321.value;
-
-  //       users[userindex].skills = editdata521.value.split(",");
-  //     }
-  //     modal.style.display = "none";
-  //     userProfile();
-  //     createEducationTable();
-  //     createExperienceTable();
-  //   };
-  // };
   editProfile.onclick = async function () {
     try {
       const response = await fetch("http://localhost:8000/profileUpdate");
@@ -971,29 +803,19 @@ if (editProfile) {
       const editdata11 = document.createElement("td");
       const editdata12 = document.createElement("td");
       const editdata121 = document.createElement("input");
-      editdata121.addEventListener("input", function (event) {
-        const inputValue = event.target.value;
-        const regex = /[^a-zA-Z\s]/g;
 
-        if (regex.test(inputValue)) {
-          event.target.value = inputValue.replace(/[^a-zA-Z\s]/g, "");
-        }
-      });
+      const editdata121Regex = /[^a-zA-Z\s]/g;
+      ValidationInputByRegex(editdata121, editdata121Regex);
 
       const editdata21 = document.createElement("td");
       const editdata22 = document.createElement("td");
       const editdata221 = document.createElement("input");
+
       const editdata31 = document.createElement("td");
       const editdata32 = document.createElement("td");
       const editdata321 = document.createElement("input");
-      editdata321.addEventListener("input", function (event) {
-        const inputValue = event.target.value;
-        const regex = /[^0-9]/g;
-
-        if (regex.test(inputValue)) {
-          event.target.value = inputValue.replace(/[^0-9]/g, "");
-        }
-      });
+      const editdata321Regex = /[^0-9]/g;
+      ValidationInputByRegex(editdata321, editdata321Regex);
 
       const editdata41 = document.createElement("td");
       const editdata42 = document.createElement("td");
@@ -1002,18 +824,78 @@ if (editProfile) {
       const inputEditFields = document.createElement("div");
       inputEditFields.style.display = "";
       const editdata421 = document.createElement("input");
+      const editdata421Regex = /[^a-zA-Z\s._-]/g;
+      ValidationInputByRegex(editdata421, editdata421Regex);
       editdata421.placeholder = "Degree";
       const editdata422 = document.createElement("input");
+      const editdata422Regex = /[^a-zA-Z0-9\s@._-]/g;
+      ValidationInputByRegex(editdata422, editdata422Regex);
       editdata422.placeholder = "Institute";
       const editdata423 = document.createElement("input");
       editdata423.type = "date";
       editdata423.placeholder = "Starting Date";
+      editdata423.addEventListener("input", function (event) {
+        const inputValue = event.target.value;
+        const dateParts = inputValue.split("-");
+
+        if (dateParts.length === 3) {
+          const year = parseInt(dateParts[0]);
+          const month = parseInt(dateParts[1]);
+          const day = parseInt(dateParts[2]);
+
+          if (year > 9999) {
+            event.target.value = "9999-";
+            return;
+          }
+          if (month > 12) {
+            event.target.value = `${year}-12-`;
+            return;
+          }
+
+          if (day > 31) {
+            event.target.value = `${year}-${month}-31`;
+            return;
+          }
+        }
+
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(inputValue)) {
+          event.target.value = "";
+        }
+      });
+
       const editdata424 = document.createElement("input");
       editdata424.type = "date";
-      editdata424.placeholder = "Ending Date"; // Add a placeholder for ending date
+      editdata424.placeholder = "Ending Date";
+      editdata424.addEventListener("input", function (event) {
+        const inputValue = event.target.value;
+        const dateParts = inputValue.split("-");
+
+        if (dateParts.length === 3) {
+          const year = parseInt(dateParts[0]);
+          const month = parseInt(dateParts[1]);
+          const day = parseInt(dateParts[2]);
+
+          if (year > 9999) {
+            event.target.value = "9999-";
+            return;
+          }
+          if (month > 12) {
+            event.target.value = `${year}-12-`;
+            return;
+          }
+
+          if (day > 31) {
+            event.target.value = `${year}-${month}-31`;
+            return;
+          }
+        }
+
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(inputValue)) {
+          event.target.value = "";
+        }
+      });
       const presentStatusLabel = document.createElement("label");
 
-      // presentStatusLabel.style.marginTop = "100px";
       // Create a label for present status
 
       presentStatusLabel.textContent = "Present Status";
@@ -1032,7 +914,6 @@ if (editProfile) {
       presentStatusInput.addEventListener("change", () => {
         if (presentStatusInput.checked) {
           editdata424.disabled = true;
-          editdata424.value = "present";
         } else {
           editdata424.disabled = false;
         }
@@ -1046,7 +927,11 @@ if (editProfile) {
       inputEditFields.appendChild(SaveEduBtn);
       const showdatass = document.createElement("div");
       const showEducation1 = document.createElement("ul");
-
+      SaveEduBtn.style.backgroundColor = "skyblue";
+      SaveEduBtn.style.border = "none";
+      SaveEduBtn.style.fontWeight = "bold";
+      SaveEduBtn.style.borderRadius = "0px";
+      SaveEduBtn.style.padding = "5px 10px";
       createEducationTable();
 
       // editEducation.textContent = "Edit";
@@ -1056,14 +941,14 @@ if (editProfile) {
       // /////  New education ki entry save kro
       SaveEduBtn.onclick = async function () {
         // Create a new education object based on the input fields
+
         const newEducationItem = {
           username: loginUser.email,
           degree: editdata421.value,
           university: editdata422.value,
           startDate: editdata423.value,
-          EndDate: editdata424.value,
+          endDate: editdata424.value || "present",
         };
-        // user1.education.push(newEducationItem);
 
         try {
           const response = await fetch("http://localhost:8000/addEduaction", {
@@ -1098,14 +983,6 @@ if (editProfile) {
       // showEducation.appendChild(editEducation);
       showdatass.appendChild(showEducation1);
 
-      editdata421.addEventListener("input", function (event) {
-        const inputValue = event.target.value;
-        const regex = /[^a-zA-Z\s]/;
-        if (regex.test(inputValue)) {
-          event.target.value = inputValue.replace(/[^a-zA-Z\s,]/, "");
-        }
-      });
-
       const editdata61 = document.createElement("td");
       const editdata62 = document.createElement("td");
       editdata62.style.display = "flex";
@@ -1113,13 +990,73 @@ if (editProfile) {
       const experEditFields = document.createElement("div");
       inputEditFields.style.display = "";
       const editdata621 = document.createElement("input");
+      const editdata621Regex = /[^a-zA-Z\s_-]/g;
+      ValidationInputByRegex(editdata621, editdata621Regex);
       editdata621.placeholder = "Position";
       const editdata622 = document.createElement("input");
+      const editdata622Regex = /[^a-zA-Z0-9\s_-]/g;
+      ValidationInputByRegex(editdata622, editdata622Regex);
       editdata622.placeholder = "company";
       const editdata623 = document.createElement("input");
+      editdata623.addEventListener("input", function (event) {
+        const inputValue = event.target.value;
+        const dateParts = inputValue.split("-");
+
+        if (dateParts.length === 3) {
+          const year = parseInt(dateParts[0]);
+          const month = parseInt(dateParts[1]);
+          const day = parseInt(dateParts[2]);
+
+          if (year > 9999) {
+            event.target.value = "9999-";
+            return;
+          }
+          if (month > 12) {
+            event.target.value = `${year}-12-`;
+            return;
+          }
+
+          if (day > 31) {
+            event.target.value = `${year}-${month}-31`;
+            return;
+          }
+        }
+
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(inputValue)) {
+          event.target.value = "";
+        }
+      });
       editdata623.type = "date";
       editdata423.placeholder = "Starting Date";
       const editdata624 = document.createElement("input");
+      editdata624.addEventListener("input", function (event) {
+        const inputValue = event.target.value;
+        const dateParts = inputValue.split("-");
+
+        if (dateParts.length === 3) {
+          const year = parseInt(dateParts[0]);
+          const month = parseInt(dateParts[1]);
+          const day = parseInt(dateParts[2]);
+
+          if (year > 9999) {
+            event.target.value = "9999-";
+            return;
+          }
+          if (month > 12) {
+            event.target.value = `${year}-12-`;
+            return;
+          }
+
+          if (day > 31) {
+            event.target.value = `${year}-${month}-31`;
+            return;
+          }
+        }
+
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(inputValue)) {
+          event.target.value = "";
+        }
+      });
       editdata624.type = "date";
       editdata624.placeholder = "Ending Date"; // Add a placeholder for ending date
       const presentStatusLabelExp = document.createElement("label");
@@ -1140,16 +1077,22 @@ if (editProfile) {
       experEditFields.appendChild(presentStatusInputexp);
       //inputEditFields.appendChild(presentStatusText);
 
-      presentStatusInput.addEventListener("change", () => {
-        if (presentStatusInput.checked) {
+      presentStatusInputexp.addEventListener("change", () => {
+        if (presentStatusInputexp.checked) {
           editdata624.disabled = true;
-          editdata624.value = "present";
-        } else {
+        } else if (!presentStatusInputexp.checked) {
           editdata624.disabled = false;
+        } else {
+          console.log("not null");
         }
       });
 
       const SaveExpBtn = document.createElement("input");
+      SaveExpBtn.style.backgroundColor = "skyblue";
+      SaveExpBtn.style.border = "none";
+      SaveExpBtn.style.fontWeight = "bold";
+      SaveExpBtn.style.borderRadius = "0px";
+      SaveExpBtn.style.padding = "5px 10px";
       experEditFields.appendChild(editdata621);
       experEditFields.appendChild(editdata622);
       experEditFields.appendChild(editdata623);
@@ -1171,7 +1114,7 @@ if (editProfile) {
           position: editdata621.value,
           company: editdata622.value,
           startDate: editdata623.value,
-          endDate: editdata624.value,
+          endDate: editdata624.value || "present",
         };
         // user1.experience.push(newExperienceItem);
 
@@ -1210,15 +1153,8 @@ if (editProfile) {
       const editdata51 = document.createElement("td");
       const editdata52 = document.createElement("td");
       const editdata521 = document.createElement("input");
-      editdata521.addEventListener("input", function (event) {
-        const inputValue = event.target.value;
-        const regex = /[^a-zA-Z0-9\s,]/;
-
-        if (regex.test(inputValue)) {
-          event.target.value = inputValue.replace(/[^a-zA-Z0-9\s,]/, "");
-        }
-      });
-
+      const editdata521Regex = /[^a-zA-Z0-9\s,]/g;
+      ValidationInputByRegex(editdata521, editdata521Regex);
       editdata11.textContent = "Name:";
       editdata121.value = user1.name;
       editdata21.textContent = "password:";
@@ -1278,8 +1214,12 @@ if (editProfile) {
         if (userindex !== -1) {
           users[userindex].name = editdata121.value;
 
-          if (editdata221.value == "") {
-            alert("Please enter Passwords");
+          if (editdata221.value === "") {
+            alert("Please enter Password");
+            return;
+          } else if (editdata121.value === "") {
+            alert("Please enter Name");
+            return;
           } else {
             users[userindex].password = editdata221.value;
           }

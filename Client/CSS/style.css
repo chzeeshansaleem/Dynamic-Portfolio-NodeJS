@@ -501,7 +501,7 @@ input {
 }
 
 .userProjectImg {
-  background-image: url(../asserts/images/pro1.jpg);
+  /* background-image: url(../asserts/images/pro1.jpg); */
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
@@ -608,12 +608,28 @@ input {
   width: 100%;
   height: 30vh;
 }
+/* .addprojectModal form table tr td {
+  background-color: #fff;
+} */
+.addprojectModal form table tr td input {
+  width: 100%;
+}
+.addprojectModal form table tr td textarea {
+  width: 100%;
+}
+.editprojectModal form table tr td input {
+  width: 100%;
+}
+.editprojectModal form table tr td textarea {
+  width: 100%;
+}
 /* Add Project Modal */
 .addprojectModal {
   display: none;
-  width: 50%;
-  height: 40vh;
-  margin-left: 25%;
+  width: 40%;
+  height: auto;
+  margin-left: 30%;
+  margin-right: 30%;
   position: fixed;
   top: 100px;
   left: 0;
@@ -624,9 +640,10 @@ input {
 }
 .editProjectModal {
   display: none;
-  width: 50%;
-  height: 40vh;
-  margin-left: 25%;
+  width: 40%;
+  height: auto;
+  margin-left: 30%;
+  margin-right: 30%;
   position: fixed;
   top: 100px;
   left: 0;
@@ -654,8 +671,8 @@ form button {
 .AdminAddUser {
   display: none;
   width: 30%;
-  height: 40vh;
-  margin-left: 25%;
+  height: auto;
+  margin-left: 35%;
   position: fixed;
   top: 100px;
   left: 0;

@@ -63,13 +63,16 @@ const testData = async () =>
           liveBtn.textContent = "Details";
           const projectImg = document.createElement("div");
           projectImg.classList.add("projectImg");
-          projectImg.style.backgroundImage = `url(${project.img})`;
+          const imageFormat = "jpg" || "png" || "jpeg";
+          projectImg.style.backgroundImage = `url(data:image/${imageFormat};base64,${project.img})`;
+
           // sirf see live per click kr k
           function modalProject() {
             modal.style.display = "block";
 
             const modalPic = document.querySelector(".modalPic");
-            modalPic.style.backgroundImage = `url(${project.img})`;
+            const imageFormat = "jpg" || "png" || "jpeg";
+            modalPic.style.backgroundImage = `url(data:image/${imageFormat};base64,${project.img})`;
 
             const modalDetails = document.querySelector(".modalDetails");
             modalDetails.innerHTML = "";
@@ -154,10 +157,12 @@ const testData = async () =>
     });
 testData();
 const logoutbtn = document.getElementById("logout");
-export default function logout(e) {
+export default async function logout(e) {
   e.preventDefault();
   localStorage.removeItem("user");
   localStorage.removeItem("admin");
+  const res = await fetch("http://localhost:8000/logout");
+  console.log(res);
   const url = "http://127.0.0.1:5500/Client/HTML/login.html";
   window.location.href = url;
 }

@@ -1,15 +1,23 @@
-//import userProjectData from "../db/projects.json" assert { type: "json" };
 import logout from "../JS/index.js";
-//ximport searchProjects from "../JS/AdminViewProjects.js";
-//console.log(userProjectData);
+
 const redirct = localStorage.getItem("user");
 if (!redirct) {
   const url = "http://127.0.0.1:5500/Client/HTML/login.html";
   window.location.href = url;
 }
-
+var base64String;
+var reader;
 const user1 = JSON.parse(localStorage.getItem("user"));
+// validation func
+function ValidationInputByRegex(inputElement, regex) {
+  inputElement.addEventListener("input", function (event) {
+    const inputValue = event.target.value;
 
+    if (regex.test(inputValue)) {
+      event.target.value = inputValue.replace(regex, "");
+    }
+  });
+}
 // delete project
 async function deleteUserProject(projectId) {
   try {
@@ -37,7 +45,8 @@ async function deleteUserProject(projectId) {
   }
 }
 const searchInput = document.getElementById("searchInput");
-
+const searchInputRegex = /[^a-zA-Z0-9\s,_#-]/g;
+ValidationInputByRegex(searchInput, searchInputRegex);
 async function userpro() {
   const userProjectsContainer = document.querySelector(".usersprojects");
   userProjectsContainer.innerHTML = "";
@@ -109,7 +118,9 @@ async function userpro() {
           UserEditProject.textContent = "Edit Project";
           const userProjectImg = document.createElement("div");
           userProjectImg.classList.add("userProjectImg");
-          userProjectImg.style.backgroundImage = `url(${project.img})`;
+
+          const imageFormat = "jpg" || "png" || "jpeg";
+          userProjectImg.style.backgroundImage = `url(data:image/${imageFormat};base64,${project.img})`;
 
           // Only open modal when "Edit Project" is clicked
           const editProjectModal = document.querySelector(".editProjectModal");
@@ -118,6 +129,7 @@ async function userpro() {
             editProjectModal.innerHTML = "";
             const editform = document.createElement("form");
             const editTable = document.createElement("table");
+            editTable.style.width = "90%";
             const editrow1 = document.createElement("tr");
             const editrow2 = document.createElement("tr");
             const editrow3 = document.createElement("tr");
@@ -129,21 +141,56 @@ async function userpro() {
             const editdata11 = document.createElement("td");
             const editdata12 = document.createElement("td");
             const editdata121 = document.createElement("input");
+            const editdata121Regex = /[^a-zA-Z0-9\s_#-]/g;
+            ValidationInputByRegex(editdata121, editdata121Regex);
             const editdata21 = document.createElement("td");
             const editdata22 = document.createElement("td");
             const editdata221 = document.createElement("textarea");
+            const editdata221Regex = /[^a-zA-Z0-9\s.,_#-]/g;
+            ValidationInputByRegex(editdata221, editdata221Regex);
             const editdata31 = document.createElement("td");
             const editdata32 = document.createElement("td");
             const editdata321 = document.createElement("input");
+            const fileNameInput = document.createElement("input");
+            const type = "png" || "jpg" || "jpeg";
+            fileNameInput.value = atob(
+              `data:image/${type};base64,${project.img}`
+            );
+            fileNameInput.id = "file-name";
+            fileNameInput.readOnly = "true";
+            editdata321.type = "file";
+
+            editdata321.addEventListener("change", (event) => {
+              const selectedFiles = event.target.files;
+
+              for (let i = 0; i < selectedFiles.length; i++) {
+                const file = selectedFiles[i];
+
+                if (file) {
+                  reader = new FileReader();
+
+                  reader.onload = (fileEvent) => {
+                    base64String = btoa(fileEvent.target.result);
+                    console.log(base64String);
+                  };
+
+                  reader.readAsBinaryString(file);
+                }
+              }
+            });
             const editdata41 = document.createElement("td");
             const editdata42 = document.createElement("td");
             const editdata421 = document.createElement("textarea");
+            const editdata421Regex = /[^a-zA-Z0-9\s,_#-]/g;
+            ValidationInputByRegex(editdata421, editdata421Regex);
             const editdata51 = document.createElement("td");
             const editdata52 = document.createElement("td");
             const editdata521 = document.createElement("textarea");
+            ValidationInputByRegex(editdata521, editdata421Regex);
             const editdata61 = document.createElement("td");
             const editdata62 = document.createElement("td");
             const editdata621 = document.createElement("textarea");
+            ValidationInputByRegex(editdata621, editdata421Regex);
             const editdata71 = document.createElement("td");
             const editdata72 = document.createElement("td");
             const savebtn = document.createElement("button");
@@ -157,7 +204,15 @@ async function userpro() {
             editdata21.textContent = "Project Description:";
             editdata221.value = project.description;
             editdata31.textContent = "image URL:";
-            editdata321.value = project.img;
+
+            editdata321.addEventListener("change", function () {
+              const file = editdata321.files[0];
+              if (file) {
+                fileNameInput.value = file.name;
+              } else {
+                fileNameInput.value = "";
+              }
+            });
             editdata41.textContent = "Tags:";
             editdata421.value = project.tags;
             editdata61.textContent = "Languages:";
@@ -170,7 +225,8 @@ async function userpro() {
             editdata62.appendChild(editdata621);
             editdata52.appendChild(editdata521); //2nd td
             editdata42.appendChild(editdata421);
-            editdata32.appendChild(editdata321); //2nd td
+            editdata32.appendChild(editdata321);
+            editdata32.appendChild(fileNameInput); //2nd td
             editdata22.appendChild(editdata221); //2nd td
             editdata12.appendChild(editdata121); //2nd td
             editrow1.appendChild(editdata11);
@@ -215,7 +271,7 @@ async function userpro() {
                 userProjectData[projectIndex].username = user1.email;
                 userProjectData[projectIndex].title = editdata121.value;
                 userProjectData[projectIndex].description = editdata221.value;
-                userProjectData[projectIndex].img = editdata321.value;
+                userProjectData[projectIndex].img = base64String;
                 userProjectData[projectIndex].tags =
                   editdata421.value.split(",");
                 userProjectData[projectIndex].languages =
@@ -303,10 +359,13 @@ addProjectFunction.onclick = (e) => {
   console.log("clicked addProject");
   const addProjectmodal = document.querySelector(".addprojectModal");
   addProjectmodal.style.display = "block";
+  // addProjectmodal.style.width = "auto";
   addProjectmodal.innerHTML = "";
   const addform = document.createElement("form");
+
   addform.innerHTML = "";
   const addTable = document.createElement("table");
+  addTable.style.width = "90%";
   const addrow1 = document.createElement("tr");
   const addrow2 = document.createElement("tr");
   const addrow3 = document.createElement("tr");
@@ -317,18 +376,16 @@ addProjectFunction.onclick = (e) => {
   const adddata11 = document.createElement("td");
   const adddata12 = document.createElement("td");
   const adddata121 = document.createElement("input");
-  adddata121.addEventListener("input", (e) => {
-    const inputValue = e.target.value;
-    const regex = /[^a-zA-Z0-9\s]/g;
 
-    if (regex.test(inputValue)) {
-      e.target.value = inputValue.replace(/[^a-zA-Z0-9\s]/g, "");
-    }
-  });
+  const adddata121Regex = /[^a-zA-Z0-9\s_,-]/g;
+  ValidationInputByRegex(adddata121, adddata121Regex);
 
   const adddata21 = document.createElement("td");
   const adddata22 = document.createElement("td");
   const adddata221 = document.createElement("textarea");
+
+  const adddata221Regex = /[^a-zA-Z0-9\s_,-]/g;
+  ValidationInputByRegex(adddata221, adddata221Regex);
   adddata221.addEventListener("input", (e) => {
     const inputValue = e.target.value;
     const maxLength = 280;
@@ -339,16 +396,44 @@ addProjectFunction.onclick = (e) => {
   });
   const adddata31 = document.createElement("td");
   const adddata32 = document.createElement("td");
+  // file uploading
   const adddata321 = document.createElement("input");
+  adddata321.type = "file";
+
+  adddata321.addEventListener("change", (event) => {
+    const selectedFiles = event.target.files;
+
+    for (let i = 0; i < selectedFiles.length; i++) {
+      const file = selectedFiles[i];
+
+      if (file) {
+        reader = new FileReader();
+
+        reader.onload = (fileEvent) => {
+          base64String = btoa(fileEvent.target.result);
+          console.log(base64String);
+        };
+
+        reader.readAsBinaryString(file);
+      }
+    }
+  });
+
   const adddata41 = document.createElement("td");
   const adddata42 = document.createElement("td");
   const adddata421 = document.createElement("textarea");
+  const adddata421Regex = /[^a-zA-Z0-9\s,#_-]/g;
+  ValidationInputByRegex(adddata421, adddata421Regex);
   const adddata51 = document.createElement("td");
   const adddata52 = document.createElement("td");
   const adddata521 = document.createElement("textarea");
+  const adddata521Regex = /[^a-zA-Z0-9\s,_#-]/g;
+  ValidationInputByRegex(adddata521, adddata521Regex);
   const adddata61 = document.createElement("td");
   const adddata62 = document.createElement("td");
-  const adddata621 = document.createElement("input");
+  const adddata621 = document.createElement("textarea");
+  const adddata621Regex = /[^a-zA-Z0-9\s,_#-]/g;
+  ValidationInputByRegex(adddata621, adddata621Regex);
   const adddata71 = document.createElement("td");
   const adddata72 = document.createElement("td");
   const adddata711 = document.createElement("button");
@@ -416,7 +501,7 @@ addProjectFunction.onclick = (e) => {
 
       title: adddata121.value,
       description: adddata221.value,
-      img: adddata321.value,
+      img: base64String,
       tags: adddata421.value.split(","),
       languages: adddata521.value.split(","),
       technology: adddata621.value.split(","),
@@ -458,92 +543,8 @@ addProjectFunction.onclick = (e) => {
   }
 };
 
-// const searchInput = document.getElementById("searchInput");
-// const filter = searchInput.value.trim().toUpperCase();
-// if (searchInput) {
-//   searchInput.addEventListener("input", searchProjects);
-// }
-
-// async function searchProjects() {
-//   try {
-//     const res = await fetch("http://localhost:8000/projects");
-//     const projectData = await res.json();
-//     console.log(projectData);
-
-//     const userProjectRow = document.querySelectorAll(".userProjectRow");
-
-//     for (let i = 0; i < projectData.length; i++) {
-//       const title = projectData[i].title.toUpperCase();
-//       const description = projectData[i].description.toUpperCase();
-//       console.log("title: " + title);
-//       // let tagsMatch = false;
-//       // let languagesMatch = false;
-//       // let technologiesMatch = false;
-//       // // tags search kr raha ha
-//       // for (let k = 0; k < projectData[i].tags.length; k++) {
-//       //   const tag = projectData[i].tags[k].toUpperCase();
-//       //   if (tag.includes(filter)) {
-//       //     tagsMatch = true;
-//       //     break;
-//       //   }
-//       // }
-//       // // languange search kr raha ha
-
-//       // // technology ko search kr raha ha
-//       // for (let k = 0; k < projectData[i].technology.length; k++) {
-//       //   const technology = projectData[i].technology[k].toUpperCase();
-//       //   if (technology.includes(filter)) {
-//       //     technologiesMatch = true;
-//       //     break;
-//       //   }
-//       // }
-
-//       if (
-//         title.includes(filter) ||
-//         description.includes(filter)
-//         //  ||
-//         // tagsMatch ||
-//         // languagesMatch ||
-//         // technologiesMatch
-//       ) {
-//         console.log(title.includes(filter));
-//         userProjectRow[i].style.display = "flex";
-//       } else {
-//         userProjectRow[i].style.display = "none";
-//       }
-//     }
-//   } catch (error) {
-//     console.log(error);
-//   }
-// }
-
-// function searchProjects() {
-//   const filter = searchInput.value.trim().toUpperCase();
-//   const userProjectRow = document.querySelectorAll(".userProjectRow");
-
-//   for (let i = 0; i < userProjectData.length; i++) {
-//     const title = userProjectData[i].title.toUpperCase();
-//     const description = userProjectData[i].description.toUpperCase();
-//     // const tags = userProjectData[i].tags.toUpperCase();
-//     // const languages = userProjectData[i].languages.toUpperCase();
-//     // const Technologies = userProjectData[i].technology.toUpperCase();
-
-//     if (
-//       title.includes(filter) ||
-//       description.includes(filter)
-//       //||
-//       // tags.includes(filter) ||
-//       // languages.includes(filter) ||
-//       // Technologies.includes(filter)
-//     ) {
-//       userProjectRow[i].style.display = "";
-//     } else {
-//       userProjectRow[i].style.display = "none";
-//     }
-//   }
-// }
-const logoutbtn = document.getElementById("logout");
 // Logout button for admin and user
+const logoutbtn = document.getElementById("logout");
 if (logoutbtn) {
   logoutbtn.onclick = logout;
 }

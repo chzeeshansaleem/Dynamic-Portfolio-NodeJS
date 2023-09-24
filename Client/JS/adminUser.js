@@ -9,6 +9,38 @@ if (!redirct) {
   window.location.href = url;
 }
 
+// function maskText(text, allowedRegex) {
+//   // Escape any special characters in the allowedRegex
+//   const escapedRegex = new RegExp(
+//     allowedRegex.source.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"),
+//     "g"
+//   );
+
+//   // Use the escapedRegex to replace disallowed characters with an empty string
+//   const maskedText = text.replace(
+//     new RegExp(`[^${escapedRegex.source}]`, "g"),
+//     ""
+//   );
+
+//   return maskedText;
+// }
+
+// const inputText = "abc123!@#45/*.6";
+// const allowedRegex = /[a-zA-Z0-9@,.]/;
+// const result = maskText(inputText, allowedRegex);
+// console.log(result); // Output: "abc123456"
+
+// validation func
+function ValidationInputByRegex(inputElement, regex) {
+  inputElement.addEventListener("input", function (event) {
+    const inputValue = event.target.value;
+
+    if (regex.test(inputValue)) {
+      event.target.value = inputValue.replace(regex, "");
+    }
+  });
+}
+
 // delete project
 async function deleteUserProject(usermail) {
   console.log("delete Project Clicked by admin");
@@ -176,7 +208,6 @@ const AdminAddUserBtn = document.querySelector(".AdminAddUserBtn");
 // Add new user btn
 AdminAddUserBtn.onclick = function () {
   AdminAddUser.style.display = "block";
-  AdminAddUser.style.height = "auto";
 
   const adminCross = document.querySelector("adminCross");
   AdminAddUser.innerHTML = "";
@@ -193,7 +224,8 @@ AdminAddUserBtn.onclick = function () {
   const adddata12 = document.createElement("td");
   const adddata121 = document.createElement("input");
   adddata121.setAttribute("type", "email");
-
+  const adddata121Regex = /[^a-zA-Z0-9\s,._@-]/g;
+  ValidationInputByRegex(adddata121, adddata121Regex);
   const adddata21 = document.createElement("td");
   const adddata22 = document.createElement("td");
   const adddata221 = document.createElement("input");
@@ -222,13 +254,8 @@ AdminAddUserBtn.onclick = function () {
   const adddata41 = document.createElement("td");
   const adddata42 = document.createElement("td");
   const adddata421 = document.createElement("input");
-  adddata421.addEventListener("input", function (event) {
-    const inputValue = event.target.value;
-    const regex = /[^a-zA-Z\s]/;
-    if (regex.test(inputValue)) {
-      event.target.value = inputValue.replace(/[^a-zA-Z\s,]/, "");
-    }
-  });
+  const adddata421Regex = /[^a-zA-Z\s]/g;
+  ValidationInputByRegex(adddata421, adddata421Regex);
   const savebtn = document.createElement("button");
   savebtn.textContent = "Save";
   savebtn.type = "submit";
@@ -304,8 +331,10 @@ AdminAddUserBtn.onclick = function () {
         return;
       } else if (res.ok) {
         alert("user added successfully");
+      } else if (res.status === 403) {
+        alert("You are not authorized to add user");
       } else {
-        alert("error fron backend");
+        alert("error from server");
       }
     } catch (error) {
       console.log(error);
@@ -342,12 +371,14 @@ async function editRole(userEmail, newRole) {
 
 //Search Bar
 const searchInput = document.getElementById("searchInput");
+const searchInputRegex = /[^a-zA-Z0-9\s,._@-]/g;
+ValidationInputByRegex(searchInput, searchInputRegex);
 if (searchInput) {
   searchInput.addEventListener("input", SearchSuggestion);
 }
 async function SearchSuggestion() {
   try {
-    const res = await fetch("http://localhost:8000/adminUsers");
+    const res = await fetch("http://localhost:8000");
     const jsonfile = await res.json();
     console.log(jsonfile);
     const filter = document.getElementById("searchInput").value.toLowerCase();
