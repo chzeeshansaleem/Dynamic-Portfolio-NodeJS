@@ -46,7 +46,7 @@ const server = http.createServer((req, res) => {
     res.end();
     return;
   }
-  if (req.url === "/") {
+  if (req.url === "/" && req.method === "GET") {
     showUserProfile(req, res);
   } else if (req.url === "/signup" && req.method === "POST") {
     handleSignup(req, res);
@@ -65,13 +65,13 @@ const server = http.createServer((req, res) => {
   } else if (pathname.startsWith("/profileUpdate/") && req.method === "PUT") {
     const profileIdToUpdate = pathname.split("/")[2];
     updateProfileByUser(req, res, profileIdToUpdate);
-  } else if (req.url === "/profileUpdate") {
+  } else if (req.url === "/profileUpdate" && req.method === "GET") {
     showUserForProfile(req, res);
   } else if (req.url === "/addEduaction" && req.method === "POST") {
     addEduactionOfUser(req, res);
-  } else if (req.url === "/projects") {
+  } else if (req.url === "/projects" && req.method === "GET") {
     showProjects(req, res);
-  } else if (req.url === "/education") {
+  } else if (req.url === "/education" && req.method === "GET") {
     showEducation(req, res);
   } else if (req.url === "/userAddProjects" && req.method === "POST") {
     addProject(req, res);
@@ -105,7 +105,7 @@ const server = http.createServer((req, res) => {
   ) {
     const DeleteIdToUpdate = pathname.split("/")[2];
     deleteExperiences(req, res, DeleteIdToUpdate);
-  } else if (req.url === "/experience") {
+  } else if (req.url === "/experience" && req.method === "GET") {
     showExperience(req, res);
   } else if (req.url === "/logout") {
     logout(req, res);

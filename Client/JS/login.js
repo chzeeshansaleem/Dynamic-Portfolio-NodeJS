@@ -58,15 +58,13 @@ async function handleLogin(e) {
       alert("User Login successfully");
 
       localStorage.setItem("user", JSON.stringify(result.user));
-      setLocalStorageWithExpiry("token", result.token, 2);
-      //localStorage.setItem("token", JSON.stringify(result.token));
+      setLocalStorageWithExpiry("token", result.token, 5);
       const url = "http://127.0.0.1:5500/Client/HTML/index.html";
       window.location.href = url;
     } else if (res.status === 222) {
       alert("Admin Login successfully");
-      setLocalStorageWithExpiry("Admintoken", result.Admintoken, 2);
+      setLocalStorageWithExpiry("Admintoken", result.Admintoken, 5);
       localStorage.setItem("admin", JSON.stringify(result.user));
-      //localStorage.setItem("Admintoken", JSON.stringify(result.Admintoken));
 
       const url = "http://127.0.0.1:5500/Client/HTML/adminUsers.html";
       window.location.href = url;

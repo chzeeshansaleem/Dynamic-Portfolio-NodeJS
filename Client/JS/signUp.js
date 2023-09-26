@@ -41,35 +41,39 @@ async function handleSignup(event) {
     password,
     role: "user",
   };
-
-  try {
-    const res = await fetch("http://localhost:8000/signup", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(user), // Convert user object to JSON
-    });
-    console.log(res.status);
-    if (!res.status === 402) {
-      alert("fields are empty");
-      emprtyFields();
-      return;
-    } else if (res.status === 200) {
-      alert("User signed up successfully");
-      const url = "http://127.0.0.1:5500/Client/HTML/login.html";
-      window.location.href = url;
-    } else if (res.status === 400) {
-      alert("User Already Registered");
-      emprtyFields();
-    } else {
-      alert("Error ha signup ma");
-      emprtyFields();
+  if (name === "" || email === "" || password === "") {
+    alert("Please enter all required fields");
+  } else {
+    try {
+      const res = await fetch("http://localhost:8000/signup", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(user), // Convert user object to JSON
+      });
+      console.log(res.status);
+      if (!res.status === 402) {
+        alert("fields are empty");
+        emprtyFields();
+        return;
+      } else if (res.status === 200) {
+        alert("User signed up successfully");
+        const url = "http://127.0.0.1:5500/Client/HTML/login.html";
+        window.location.href = url;
+      } else if (res.status === 400) {
+        alert("User Already Registered");
+        emprtyFields();
+      } else {
+        alert("Error ha signup ma");
+        emprtyFields();
+      }
+    } catch (error) {
+      console.error("Error:", error);
+      alert("An error occurred during signup");
     }
-  } catch (error) {
-    console.error("Error:", error);
-    alert("An error occurred during signup");
   }
+
   // //input fields empty k liyeh
   function emprtyFields() {
     document.getElementById("name").value = "";

@@ -170,9 +170,13 @@ function handleLogin(req, res) {
         if (user) {
           console.log("Login successful");
           if (user.role === "admin") {
-            const Admintoken = jwt.sign({ email: user.email }, secretKey, {
-              expiresIn: "2m",
-            });
+            const Admintoken = jwt.sign(
+              { email: user.email, role: user.role },
+              secretKey,
+              {
+                expiresIn: "5m",
+              }
+            );
             const tokensession = {
               username: user.email,
               token: Admintoken,
@@ -189,7 +193,7 @@ function handleLogin(req, res) {
             );
           } else {
             const token = jwt.sign({ email: user.email }, secretKey, {
-              expiresIn: "2m",
+              expiresIn: "5m",
             });
             const tokensession = {
               username: user.email,
