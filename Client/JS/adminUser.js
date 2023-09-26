@@ -1,10 +1,29 @@
 //import jsonfile from "../db/user.json" assert { type: "json" };
 //console.log(jsonfile);
+export function getLocalStorageWithExpiry(key) {
+  const item = localStorage.getItem(key);
+  if (!item) return null;
+
+  const parsedItem = JSON.parse(item);
+  const now = new Date();
+
+  if (now.getTime() > parsedItem.expiry) {
+    // Item has expired, so remove it from localStorage
+    localStorage.removeItem(key);
+    return null;
+  }
+
+  return parsedItem.value;
+}
 import userProjectData from "../db/projects.json" assert { type: "json" };
 console.log(userProjectData);
 import logoutAdmin from "../JS/AdminViewProjects.js";
 const redirct = localStorage.getItem("admin");
-if (!redirct) {
+const Admintoken1 = getLocalStorageWithExpiry("Admintoken");
+console.log(Admintoken1);
+const Admintoken = `"${Admintoken1}"`;
+console.log("Admintoken:", Admintoken);
+if (!Admintoken1) {
   const url = "http://127.0.0.1:5500/Client/HTML/login.html";
   window.location.href = url;
 }
@@ -47,12 +66,16 @@ async function deleteUserProject(usermail) {
 
   const res = await fetch(`http://localhost:8000/deleteUsers/${usermail}`, {
     method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${Admintoken.substring(1, Admintoken.length - 1)}`,
+    },
   });
   if (!res.ok) {
-    alert("Project Not deleted");
+    alert("user and his project Not deleted");
     usershow();
   } else {
-    alert("Project deleted");
+    alert("user and his project deleted");
     usershow();
   }
 }
@@ -91,7 +114,15 @@ async function usershow() {
     const currentAdminEmail = JSON.parse(localStorage.getItem("admin"));
 
     try {
-      const res = await fetch("http://localhost:8000/adminUsers");
+      const res = await fetch("http://localhost:8000/adminUsers", {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${Admintoken.substring(
+            1,
+            Admintoken.length - 1
+          )}`,
+        },
+      });
       const jsonfile = await res.json();
       console.log(jsonfile);
 
@@ -223,7 +254,8 @@ AdminAddUserBtn.onclick = function () {
   const adddata11 = document.createElement("td");
   const adddata12 = document.createElement("td");
   const adddata121 = document.createElement("input");
-  adddata121.setAttribute("type", "email");
+  adddata121.type = "email";
+  // adddata121.setAttribute("type", "email");
   const adddata121Regex = /[^a-zA-Z0-9\s,._@-]/g;
   ValidationInputByRegex(adddata121, adddata121Regex);
   const adddata21 = document.createElement("td");
@@ -257,13 +289,23 @@ AdminAddUserBtn.onclick = function () {
   const adddata421Regex = /[^a-zA-Z\s]/g;
   ValidationInputByRegex(adddata421, adddata421Regex);
   const savebtn = document.createElement("button");
-  savebtn.textContent = "Save";
+  savebtn.textContent = "Add User";
   savebtn.type = "submit";
+  savebtn.style.backgroundColor = "lightgreen";
+  savebtn.style.padding = "5px 10px";
+  savebtn.style.border = "none";
+  savebtn.style.boxShadow = "2px 2px 5px gray,-2px -2px 5px gray";
+  savebtn.style.fontWeight = "bold";
   adddata11.textContent = "Email:";
   adddata21.textContent = "Password:";
   adddata31.textContent = "Role:";
   adddata41.textContent = "Name:";
   cancelAddUser.textContent = "Cancel";
+  cancelAddUser.style.backgroundColor = "white";
+  cancelAddUser.style.padding = "5px 10px";
+  cancelAddUser.style.border = "none";
+  cancelAddUser.style.boxShadow = "2px 2px 5px gray,-2px -2px 5px gray";
+  cancelAddUser.style.fontWeight = "bold";
   adddata52.appendChild(savebtn);
   adddata51.appendChild(cancelAddUser);
   adddata42.appendChild(adddata421);
@@ -321,11 +363,14 @@ AdminAddUserBtn.onclick = function () {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${Admintoken.substring(
+            1,
+            Admintoken.length - 1
+          )}`,
         },
         body: JSON.stringify(adduserDataForm),
       });
 
-      // const user = jsonfile.find((user) => user.email === adddata121.value);
       if (res.status === 400) {
         alert("this email already exist");
         return;
@@ -355,7 +400,13 @@ async function editRole(userEmail, newRole) {
   try {
     const res = await fetch(`http://localhost:8000/adminUsers/${userEmail}`, {
       method: "PUT",
-      headers: { "content-type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${Admintoken.substring(
+          1,
+          Admintoken.length - 1
+        )}`,
+      },
       body: JSON.stringify(newRole),
     });
     if (!res.ok) {
@@ -371,14 +422,22 @@ async function editRole(userEmail, newRole) {
 
 //Search Bar
 const searchInput = document.getElementById("searchInput");
-const searchInputRegex = /[^a-zA-Z0-9\s,._@-]/g;
+const searchInputRegex = /[^a-zA-Z0-9\s,.@_-]/g;
 ValidationInputByRegex(searchInput, searchInputRegex);
 if (searchInput) {
   searchInput.addEventListener("input", SearchSuggestion);
 }
 async function SearchSuggestion() {
   try {
-    const res = await fetch("http://localhost:8000");
+    const res = await fetch("http://localhost:8000", {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${Admintoken.substring(
+          1,
+          Admintoken.length - 1
+        )}`,
+      },
+    });
     const jsonfile = await res.json();
     console.log(jsonfile);
     const filter = document.getElementById("searchInput").value.toLowerCase();

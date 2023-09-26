@@ -1,8 +1,23 @@
-//import projectData from "../db/projects.json" assert { type: "json" };
+function getLocalStorageWithExpiry(key) {
+  const item = localStorage.getItem(key);
+  if (!item) return null;
 
-//console.log(projectData);
-const redirctadmin = localStorage.getItem("admin");
-if (!redirctadmin) {
+  const parsedItem = JSON.parse(item);
+  const now = new Date();
+
+  if (now.getTime() > parsedItem.expiry) {
+    // Item has expired, so remove it from localStorage
+    localStorage.removeItem(key);
+    return null;
+  }
+
+  return parsedItem.value;
+}
+const Admintoken1 = getLocalStorageWithExpiry("Admintoken");
+console.log(Admintoken1);
+const Admintoken = `"${Admintoken1}"`;
+console.log("Admintoken:", Admintoken);
+if (!Admintoken1) {
   const url = "http://127.0.0.1:5500/Client/HTML/login.html";
   window.location.href = url;
 }
@@ -10,7 +25,12 @@ if (!redirctadmin) {
 const projectsContainer = document.querySelector(".projects");
 const modal = document.querySelector(".modal");
 const testData = async () =>
-  await fetch("http://localhost:8000/projects")
+  await fetch("http://localhost:8000/projects", {
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${Admintoken.substring(1, Admintoken.length - 1)}`,
+    },
+  })
     .then((res) => res.json())
     .then((projectData) => {
       {
@@ -137,7 +157,15 @@ if (searchInput) {
 
 async function searchProjects() {
   try {
-    const res = await fetch("http://localhost:8000/projects");
+    const res = await fetch("http://localhost:8000/projects", {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${Admintoken.substring(
+          1,
+          Admintoken.length - 1
+        )}`,
+      },
+    });
     const projectData = await res.json();
     console.log(projectData);
 
@@ -194,9 +222,21 @@ async function searchProjects() {
 }
 
 const logoutbtn = document.getElementById("logout");
+const insidebtn = document.getElementById("insideLogout");
+insidebtn.style.backgroundColor = "#D0312D";
+insidebtn.style.padding = "5px 10px";
+insidebtn.style.border = "none";
+insidebtn.style.boxShadow = "2px 2px 5px gray,-2px -2px 5px gray";
+insidebtn.style.fontWeight = "bold";
 export default async function logoutAdmin() {
   localStorage.removeItem("admin");
-  const res = await fetch("http://localhost:8000/logout");
+  localStorage.removeItem("Admintoken");
+  const res = await fetch("http://localhost:8000/logout", {
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${Admintoken.substring(1, Admintoken.length - 1)}`,
+    },
+  });
   console.log(res);
   const url = "http://127.0.0.1:5500/Client/HTML/login.html";
   window.location.href = url;

@@ -1,12 +1,32 @@
 const redirct = JSON.parse(localStorage.getItem("user"));
-const redirctadmin = localStorage.getItem("admin");
-if (!redirct && !redirctadmin) {
+export function getLocalStorageWithExpiry(key) {
+  const item = localStorage.getItem(key);
+  if (!item) return null;
+
+  const parsedItem = JSON.parse(item);
+  const now = new Date();
+
+  if (now.getTime() > parsedItem.expiry) {
+    // Item has expired, so remove it from localStorage
+    localStorage.removeItem(key);
+    return null;
+  }
+
+  return parsedItem.value;
+}
+const token1 = getLocalStorageWithExpiry("token");
+console.log(token1);
+const token = `"${token1}"`;
+console.log("User token:", token);
+//const token = localStorage.getItem("token");
+const AdmintokenRedirect = localStorage.getItem("Admintoken");
+if (!token1 && !AdmintokenRedirect) {
   const url = "http://127.0.0.1:5500/Client/HTML/login.html";
   window.location.href = url;
-} else if (redirct && redirctadmin) {
+} else if (token1 && AdmintokenRedirect) {
   const url = "http://127.0.0.1:5500/Client/HTML/PageNotFound.html";
   window.location.href = url;
-} else if (redirctadmin) {
+} else if (AdmintokenRedirect) {
   const url = "http://127.0.0.1:5500/Client/HTML/adminUsers.html";
   window.location.href = url;
 } else {
@@ -17,19 +37,25 @@ if (!redirct && !redirctadmin) {
 
 //console.log(projectData);
 
-// console.log(redirct);
-// const name = document.getElementById("username");
+console.log(redirct);
+const name = document.getElementById("username");
+
 // const uname = username.find((e) => e.email == redirct.name);
-// if (name) {
-//   name.textContent = uname.name;
-// }
+if (name) {
+  name.textContent = redirct.name;
+}
 // console.log(uname.name);
 
 const projectsContainer = document.querySelector(".projects");
 const modal = document.querySelector(".modal");
 
 const testData = async () =>
-  await fetch("http://localhost:8000/projects")
+  await fetch("http://localhost:8000/projects", {
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token.substring(1, token.length - 1)}`,
+    },
+  })
     .then((res) => res.json())
     .then((projectData) => {
       projectData.forEach((project) => {
@@ -157,11 +183,17 @@ const testData = async () =>
     });
 testData();
 const logoutbtn = document.getElementById("logout");
-export default async function logout(e) {
+export async function logout(e) {
   e.preventDefault();
+  const res = await fetch("http://localhost:8000/logout", {
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token.substring(1, token.length - 1)}`,
+    },
+  });
   localStorage.removeItem("user");
   localStorage.removeItem("admin");
-  const res = await fetch("http://localhost:8000/logout");
+  localStorage.removeItem("token");
   console.log(res);
   const url = "http://127.0.0.1:5500/Client/HTML/login.html";
   window.location.href = url;

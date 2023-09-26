@@ -1,11 +1,13 @@
 const redirct = localStorage.getItem("user");
 const redirctadmin = localStorage.getItem("admin");
-if (redirct) {
+const tokenRedirect = localStorage.getItem("token");
+const AdmintokenRedirect = localStorage.getItem("Admintoken");
+if (tokenRedirect) {
   const url = "http://127.0.0.1:5500/Client/HTML/index.html";
   const url2 = "http://127.0.0.1:5500/Client/HTML/userProfile.html";
   const url3 = "http://127.0.0.1:5500/Client/HTML/userProjects.html";
   window.location.href = url || url2 || url3;
-} else if (redirctadmin) {
+} else if (AdmintokenRedirect) {
   const url = "http://127.0.0.1:5500/Client/HTML/adminUsers.html";
   const url2 = "http://127.0.0.1:5500/Client/HTML/adminProject.html";
   window.location.href = url || url2;
@@ -48,7 +50,8 @@ async function handleSignup(event) {
       },
       body: JSON.stringify(user), // Convert user object to JSON
     });
-    if (res.status === 204) {
+    console.log(res.status);
+    if (!res.status === 402) {
       alert("fields are empty");
       emprtyFields();
       return;

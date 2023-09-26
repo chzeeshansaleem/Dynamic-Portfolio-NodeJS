@@ -23,20 +23,24 @@ import {
   deleteProject,
   updateProject,
   logout,
+  tokenshow,
 } from "./controllers/controllers.js";
-import users from "../server/db/user.json" assert { type: "json" };
 const port = process.env.PORT || 8000;
-const secretKey = process.env.SECRET_KEY;
 const server = http.createServer((req, res) => {
   const parsedUrl = url.parse(req.url, true);
   const pathname = parsedUrl.pathname;
+
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader(
     "Access-Control-Allow-Methods",
     "GET, POST, PUT, DELETE, OPTIONS"
   );
 
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+  res.setHeader(
+    "Access-Control-Allow-Headers",
+    "Content-Type, Authorization,Authentication"
+  );
+
   if (req.method === "OPTIONS") {
     res.writeHead(200);
     res.end();
@@ -105,6 +109,8 @@ const server = http.createServer((req, res) => {
     showExperience(req, res);
   } else if (req.url === "/logout") {
     logout(req, res);
+  } else if (req.url === "/token") {
+    tokenshow(req, res);
   } else {
     res.writeHead(404, { "Content-Type": "text/plain" });
     res.end("Not Found");

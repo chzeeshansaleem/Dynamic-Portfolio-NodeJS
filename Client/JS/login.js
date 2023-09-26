@@ -1,11 +1,13 @@
 const redirct = localStorage.getItem("user");
 const redirctadmin = localStorage.getItem("admin");
-if (redirct) {
+const tokenRedirect = localStorage.getItem("token");
+const AdmintokenRedirect = localStorage.getItem("Admintoken");
+if (tokenRedirect) {
   const url = "http://127.0.0.1:5500/Client/HTML/index.html";
   const url2 = "http://127.0.0.1:5500/Client/HTML/userProfile.html";
   const url3 = "http://127.0.0.1:5500/Client/HTML/userProjects.html";
   window.location.href = url || url2 || url3;
-} else if (redirctadmin) {
+} else if (AdmintokenRedirect) {
   const url = "http://127.0.0.1:5500/Client/HTML/adminUsers.html";
   const url2 = "http://127.0.0.1:5500/Client/HTML/adminProject.html";
   window.location.href = url || url2;
@@ -19,6 +21,15 @@ function ValidationInputByRegex(inputElement, regex) {
     }
   });
 }
+function setLocalStorageWithExpiry(key, value, minutes) {
+  const now = new Date();
+  const item = {
+    value: value,
+    expiry: now.getTime() + minutes * 60000, // Convert minutes to milliseconds
+  };
+  localStorage.setItem(key, JSON.stringify(item));
+}
+
 const emailInput = document.getElementById("loginemail");
 const emailRegex = /[^a-zA-Z0-9@._-]/g;
 ValidationInputByRegex(emailInput, emailRegex);
@@ -45,14 +56,17 @@ async function handleLogin(e) {
 
     if (res.status === 200) {
       alert("User Login successfully");
+
       localStorage.setItem("user", JSON.stringify(result.user));
-      localStorage.setItem("token", JSON.stringify(result.token));
+      setLocalStorageWithExpiry("token", result.token, 2);
+      //localStorage.setItem("token", JSON.stringify(result.token));
       const url = "http://127.0.0.1:5500/Client/HTML/index.html";
       window.location.href = url;
     } else if (res.status === 222) {
       alert("Admin Login successfully");
+      setLocalStorageWithExpiry("Admintoken", result.Admintoken, 2);
       localStorage.setItem("admin", JSON.stringify(result.user));
-      localStorage.setItem("token", JSON.stringify(result.token));
+      //localStorage.setItem("Admintoken", JSON.stringify(result.Admintoken));
 
       const url = "http://127.0.0.1:5500/Client/HTML/adminUsers.html";
       window.location.href = url;
@@ -69,21 +83,6 @@ async function handleLogin(e) {
     console.error("Error:", error);
     alert("An error occurred during login");
   }
-
-  // else {
-  //   if (user) {
-  // if (user1.role === "admin") {
-  //   alert(" ADMIN LOGIN SUCCESSFUL");
-  //   localStorage.setItem("admin", JSON.stringify(user1.token));
-  //   console.log(user1);
-
-  //   const url = "http://127.0.0.1:5500/Client/HTML/adminUsers.html";
-  //   window.location.href = url;
-  // } else {
-  //   alert("USER LOGIN SUCCESSFUL");
-  //   console.log(user1);
-
-  // }
 }
 const loginForm = document.getElementById("login");
 loginForm.addEventListener("submit", handleLogin);

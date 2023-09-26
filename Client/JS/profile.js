@@ -1,9 +1,9 @@
-//import users from "../db/user.json" assert { type: "json" };
-import logout from "../JS/index.js";
-
-// console.log(users);
-const redirct = localStorage.getItem("user");
-if (!redirct) {
+import { logout, getLocalStorageWithExpiry } from "../JS/index.js";
+const token1 = getLocalStorageWithExpiry("token");
+console.log(token1);
+const token = `"${token1}"`;
+console.log("User token:", token);
+if (!token1) {
   const url = "http://127.0.0.1:5500/Client/HTML/login.html";
   window.location.href = url;
 }
@@ -24,7 +24,12 @@ function ValidationInputByRegex(inputElement, regex) {
 // showing user profile
 async function userProfile() {
   try {
-    const response = await fetch("http://localhost:8000/profileUpdate");
+    const response = await fetch("http://localhost:8000/profileUpdate", {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token.substring(1, token.length - 1)}`,
+      },
+    });
 
     if (!response.ok) {
       throw new error(`fetching ka  error Status: ${response.status}`);
@@ -238,6 +243,20 @@ function createEducationEditForm(educationItem, index) {
       event.target.value = "";
     }
   });
+
+  const presentStatusLabel = document.createElement("label");
+
+  // Create a label for present status
+
+  presentStatusLabel.textContent = "Present Status";
+  const presentStatusInput = document.createElement("input");
+  presentStatusInput.style.marginTop = "0px";
+  presentStatusLabel.style.backgroundColor = "red";
+  presentStatusInput.style.marginLeft = "20%";
+  //presentStatusLabel.style.margin = "0px 10%";
+  presentStatusInput.style.marginTop = "10px";
+  presentStatusInput.type = "checkbox"; // Use a checkbox for present status
+  presentStatusInput.id = "presentStatus"; // Add an ID for the input
   // Create Save button
   const saveButton = document.createElement("button");
   saveButton.textContent = "Save";
@@ -257,6 +276,8 @@ function createEducationEditForm(educationItem, index) {
   form.appendChild(startDateInput);
   form.appendChild(endDateLabel);
   form.appendChild(endDateInput);
+  //form.appendChild(presentStatusLabel);
+  //form.appendChild(presentStatusInput);
   form.appendChild(saveButton);
   form.appendChild(cancelButton);
 
@@ -285,7 +306,10 @@ function createEducationEditForm(educationItem, index) {
         `http://localhost:8000/educationUpdate/${index}`,
         {
           method: "PUT",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token.substring(1, token.length - 1)}`,
+          },
           body: JSON.stringify(updatedEducationItem),
         }
       );
@@ -324,7 +348,12 @@ function createEducationEditForm(educationItem, index) {
 async function createEducationTable() {
   const educationTable = document.createElement("table");
   try {
-    const response = await fetch("http://localhost:8000/education");
+    const response = await fetch("http://localhost:8000/education", {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token.substring(1, token.length - 1)}`,
+      },
+    });
 
     if (!response.ok) {
       throw new error(`fetching ka  error Status: ${response.status}`);
@@ -407,6 +436,10 @@ async function createEducationTable() {
           `http://localhost:8000/educationDelete/${item.eduId}`,
           {
             method: "DELETE",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token.substring(1, token.length - 1)}`,
+            },
           }
         );
         if (res.status === 200) {
@@ -593,7 +626,10 @@ function createExperienceEditForm(experienceItem, index) {
         `http://localhost:8000/experienceUpdate/${index}`,
         {
           method: "PUT",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token.substring(1, token.length - 1)}`,
+          },
           body: JSON.stringify(updatedExperienceItem),
         }
       );
@@ -663,7 +699,12 @@ async function createExperienceTable() {
   experienceTable.appendChild(headerRow);
 
   try {
-    const response = await fetch("http://localhost:8000/experience");
+    const response = await fetch("http://localhost:8000/experience", {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token.substring(1, token.length - 1)}`,
+      },
+    });
 
     if (!response.ok) {
       throw new error(`fetching ka  error Status: ${response.status}`);
@@ -721,6 +762,10 @@ async function createExperienceTable() {
           `http://localhost:8000/experienceDelete/${item.expId}`,
           {
             method: "DELETE",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token.substring(1, token.length - 1)}`,
+            },
           }
         );
         if (res.status === 200) {
@@ -763,7 +808,12 @@ const editProfile = document.querySelector(".editProfile");
 if (editProfile) {
   editProfile.onclick = async function () {
     try {
-      const response = await fetch("http://localhost:8000/profileUpdate");
+      const response = await fetch("http://localhost:8000/profileUpdate", {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token.substring(1, token.length - 1)}`,
+        },
+      });
 
       if (!response.ok) {
         throw new error(`fetching ka  error Status: ${response.status}`);
@@ -955,6 +1005,7 @@ if (editProfile) {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
+              Authorization: `Bearer ${token.substring(1, token.length - 1)}`,
             },
             body: JSON.stringify(newEducationItem),
           });
@@ -1123,6 +1174,7 @@ if (editProfile) {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
+              Authorization: `Bearer ${token.substring(1, token.length - 1)}`,
             },
             body: JSON.stringify(newExperienceItem),
           });
@@ -1192,11 +1244,17 @@ if (editProfile) {
       editTable.appendChild(editrow1);
       editTable.appendChild(editrow2);
       editTable.appendChild(editrow3);
-      editTable.appendChild(editrow4);
       editTable.appendChild(editrow5);
+      editTable.appendChild(editrow4);
       editTable.appendChild(editrow6);
       editform.appendChild(editTable);
       const savebtn = document.createElement("button");
+      savebtn.style.backgroundColor = "skyblue";
+      savebtn.style.border = "none";
+      savebtn.style.fontWeight = "bold";
+      savebtn.style.borderRadius = "0px";
+      savebtn.style.padding = "5px 10px";
+      savebtn.style.boxShadow = "2px 2px 5px gray";
       savebtn.textContent = "Save";
       savebtn.type = "submit";
       const cancelEdit = document.getElementById("crossprofile");
@@ -1238,11 +1296,12 @@ if (editProfile) {
               method: "PUT",
               headers: {
                 "Content-Type": "application/json",
+                Authorization: `Bearer ${token.substring(1, token.length - 1)}`,
               },
               body: JSON.stringify(updatedProfile),
             }
           );
-
+          console.log(res.status);
           if (res.status === 200) {
             alert("Profile Updated successfully");
             userProfile();

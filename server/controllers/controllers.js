@@ -4,25 +4,19 @@ import jwt from "jsonwebtoken";
 import "dotenv/config";
 import education from "../../server/db/education.json" assert { type: "json" };
 import experience from "../../server/db/experience.json" assert { type: "json" };
-import { verifyToken } from "../Authentication/verify.js";
+import { verifyToken1 } from "../Authentication/verify.js";
 import projectData from "../../server/db/projects.json" assert { type: "json" };
-const port = process.env.PORT || 8000;
+import tokenData from "../../server/db/tokenSession.json" assert { type: "json" };
 const secretKey = process.env.SECRET_KEY;
-let token = null;
-let Admintoken = null;
+// check field ma data sahi  ha ya nai
 function maskText(text, allowedRegex) {
-  const escapedRegex = new RegExp(
-    allowedRegex.source.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"),
-    "g"
-  );
-
-  const maskedText = text.replace(
-    new RegExp(`[^${escapedRegex.source}]`, "g"),
-    ""
-  );
-
-  return maskedText;
+  if (allowedRegex.test(text)) {
+    return true;
+  } else {
+    return false;
+  }
 }
+
 // signup ka function
 function handleSignup(req, res) {
   let requestBody = "";
@@ -34,15 +28,15 @@ function handleSignup(req, res) {
   req.on("end", () => {
     try {
       const newUser = JSON.parse(requestBody);
-
-      const userInputFields = ["email", "password", "name"];
+      console.log(newUser);
+      const userInputFields = ["email", "password", "name", "role"];
       const missingFields = userInputFields.filter(
         (field) => !newUser.hasOwnProperty(field)
       );
 
       if (missingFields.length > 0) {
         console.log("Required fields are missing: " + missingFields.join(", "));
-        res.writeHead(400, { "Content-Type": "application/json" });
+        res.writeHead(402, { "Content-Type": "application/json" });
         res.end(
           JSON.stringify({
             message: "Required fields are missing: " + missingFields.join(", "),
@@ -137,12 +131,13 @@ function handleLogin(req, res) {
         );
         return;
       }
+      // remove extra entries
       for (const key in loginUser) {
         if (!userInputFields.includes(key)) {
           delete loginUser[key];
         }
       }
-
+      // again check object keys
       if (Object.keys(loginUser).length === 0) {
         console.log("All fields required");
         res.writeHead(400, { "Content-Type": "application/json" });
@@ -175,29 +170,15 @@ function handleLogin(req, res) {
         if (user) {
           console.log("Login successful");
           if (user.role === "admin") {
-            Admintoken = jwt.sign({ email: user.email }, secretKey, {
-              expiresIn: "20m",
+            const Admintoken = jwt.sign({ email: user.email }, secretKey, {
+              expiresIn: "2m",
             });
-            console.log(token);
+            const tokensession = {
+              username: user.email,
+              token: Admintoken,
+            };
+            tokenData.push(tokensession);
 
-            verifyToken(Admintoken)
-              .then((decoded) => {
-                // Token is valid
-                console.log("Token is valid");
-                console.log(decoded);
-              })
-
-              .catch((err) => {
-                // Token is invalid or expired
-                console.error("Token verification failed");
-                console.error(err);
-                res.writeHead(403, { "Content-Type": "application/json" });
-                res.end(
-                  JSON.stringify({
-                    message: "user not autherized",
-                  })
-                );
-              });
             res.writeHead(222, { "Content-Type": "application/json" });
             res.end(
               JSON.stringify({
@@ -207,29 +188,16 @@ function handleLogin(req, res) {
               })
             );
           } else {
-            token = jwt.sign({ email: user.email }, secretKey, {
-              expiresIn: "20m",
+            const token = jwt.sign({ email: user.email }, secretKey, {
+              expiresIn: "2m",
             });
+            const tokensession = {
+              username: user.email,
+              token: token,
+            };
+            tokenData.push(tokensession);
             console.log(token);
 
-            verifyToken(token)
-              .then((decoded) => {
-                // Token is valid
-                console.log("Token is valid");
-                console.log(decoded);
-              })
-
-              .catch((err) => {
-                // Token is invalid or expired
-                console.error("Token verification failed");
-                console.error(err);
-                res.writeHead(403, { "Content-Type": "application/json" });
-                res.end(
-                  JSON.stringify({
-                    message: "user not autherized",
-                  })
-                );
-              });
             res.writeHead(200, { "Content-Type": "application/json" });
 
             res.end(
@@ -259,27 +227,51 @@ function handleLogin(req, res) {
 }
 // show user profile on admin pannel
 function showUserProfile(req, res) {
-  if (!Admintoken) {
+  const token1 = req.headers["authorization"];
+  console.log(token1);
+  const token = token1.split(" ")[1];
+  console.log("token: ", token);
+  if (!token) {
     console.error("Token is missing");
     res.writeHead(403, { "Content-Type": "application/json" });
     res.end(JSON.stringify({ message: "Token is missing" }));
     return;
   }
   try {
-    verifyToken(Admintoken)
-      .then((decoded) => {
-        // Token is valid
-        console.log("Token is valid");
-        console.log(decoded);
+    const verified = verifyToken1(token);
+    console.log("verified token", verified);
+
+    //  find user from token session table
+    if (verified != null) {
+      const tokenExist = tokenData.find((user) => {
+        if (user.username === verified.email && user.token === token) {
+          return true;
+        }
+      });
+      // if user exist in token table
+      if (tokenExist) {
         res.writeHead(200, { "Content-Type": "application/json" });
         res.end(JSON.stringify(users));
-      })
+      }
+    } else {
+      const tokenExistIndex = tokenData.findIndex(
+        (user) => user.token === token
+      );
 
-      .catch((err) => {
-        // Token is invalid or expired
-        console.error("from user profile Token verification failed");
-        console.error(err);
-      });
+      console.log("results", tokenExistIndex);
+      if (tokenExistIndex !== -1) {
+        tokenData.splice(tokenExistIndex, 1);
+      }
+      console.log("User logged out");
+      console.error("from  show user profile Token verification failed");
+
+      res.writeHead(403, { "Content-Type": "application/json" });
+      res.end(
+        JSON.stringify({
+          message: " User Not Authenticated",
+        })
+      );
+    }
   } catch (error) {
     console.error("Error parsing JSON:", error);
     res.writeHead(400, { "Content-Type": "application/json" });
@@ -343,69 +335,98 @@ function addUser(req, res) {
         );
         return;
       }
-      const allowedRegexMail = /[a-zA-Z0-9@.]/;
+      // now doing masking
+      const allowedRegexMail = /[^a-zA-Z0-9@.]/g;
       const AfterMaskingeMail = maskText(newUser.email, allowedRegexMail);
-      const allowedRegexName = /[a-zA-Z]/;
+      const allowedRegexName = /[^a-zA-Z]/g;
       const AfterMaskingeName = maskText(newUser.name, allowedRegexName);
-      const allowedRegexPassword = /[a-zA-Z0-9@!#$%^&*]/;
-      const AfterMaskingePassword = maskText(
-        newUser.password,
-        allowedRegexPassword
-      );
+      const allowedRegexUser = /[^a-zA-Z]/g;
+      const AfterMaskingeUser = maskText(newUser.role, allowedRegexUser);
 
-      console.log("AfterMaskingeMail: ", AfterMaskingeMail);
-      console.log("AfterMaskingeName: ", AfterMaskingeName);
-      console.log("AfterMaskingePassword: ", AfterMaskingePassword);
-      // const makingUser={
-      //   email: "",
-      //   name: "",
-      //   password: "",
-      //   role: "",
-      // }
-
-      verifyToken(Admintoken)
-        .then((decoded) => {
-          // Token is valid
-          console.log("   Add user profile  Token is valid");
-          console.log(decoded);
-
-          console.log(requestBody);
-          const userExistsIndex = users.find((user) => {
-            if (user.email === newUser.email) {
+      if (
+        AfterMaskingeMail === false &&
+        AfterMaskingeName === false &&
+        AfterMaskingeUser === false
+      ) {
+        console.log("AfterMaskingeMail: ", AfterMaskingeMail);
+        console.log("AfterMaskingeName: ", AfterMaskingeName);
+        console.log("AfterMaskingeUser: ", AfterMaskingeUser);
+        const token1 = req.headers["authorization"];
+        const token = token1.split(" ")[1];
+        console.log(token);
+        //  now call verifyToken function
+        const verified = verifyToken1(token);
+        console.log("verified token", verified);
+        //  find user from token session table
+        if (verified != null) {
+          const tokenExist = tokenData.find((user) => {
+            if (user.username === verified.email && user.token === token) {
               return true;
             }
           });
-          console.log(userExistsIndex);
-          if (userExistsIndex) {
-            console.log("User already exists");
-            res.writeHead(400, { "Content-Type": "application/json" });
+          // if user exist in token table
+          if (tokenExist) {
+            console.log("   Add user profile  Token is valid");
+
+            console.log(requestBody);
+            const userExistsIndex = users.find((user) => {
+              if (user.email === newUser.email) {
+                return true;
+              }
+            });
+            console.log(userExistsIndex);
+            if (userExistsIndex) {
+              console.log("User already exists");
+              res.writeHead(400, { "Content-Type": "application/json" });
+              res.end(
+                JSON.stringify({
+                  message: " User already exists",
+                })
+              );
+            } else {
+              console.log("User does not exist");
+
+              users.push(newUser);
+              console.log(users);
+              res.writeHead(200, { "Content-Type": "application/json" });
+              res.end(
+                JSON.stringify({ message: "user added successfully", users })
+              );
+            }
+          } else {
+            console.error("from  Add user profile Token verification failed");
+            console.error(err);
+            res.writeHead(403, { "Content-Type": "application/json" });
             res.end(
               JSON.stringify({
-                message: " User already exists",
+                message: " User Not Authenticated",
               })
             );
-          } else {
-            console.log("User does not exist");
-
-            users.push(newUser);
-            console.log(users);
-            res.writeHead(200, { "Content-Type": "application/json" });
-            res.end(
-              JSON.stringify({ message: "user added successfully", users })
-            );
           }
-        })
+        } else {
+          const tokenExistIndex = tokenData.findIndex(
+            (user) => user.token === token
+          );
 
-        .catch((err) => {
+          console.log("results", tokenExistIndex);
+          if (tokenExistIndex !== -1) {
+            tokenData.splice(tokenExistIndex, 1);
+          }
+          console.log("User logged out");
           console.error("from  Add user profile Token verification failed");
-          console.error(err);
+
           res.writeHead(403, { "Content-Type": "application/json" });
           res.end(
             JSON.stringify({
               message: " User Not Authenticated",
             })
           );
-        });
+        }
+      } else {
+        console.log("entery wrong entry");
+        res.writeHead(200, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ message: " entery wrong entry" }));
+      }
     } catch (error) {
       console.error("Error parsing JSON:", error);
       res.writeHead(400, { "Content-Type": "application/json" });
@@ -454,13 +475,20 @@ function updateUserRole(req, res, userId) {
         );
         return;
       }
+      const token1 = req.headers["authorization"];
+      const token = token1.split(" ")[1];
+      console.log(token);
+      const verified = verifyToken1(token);
+      console.log("verified token", verified);
+      //  find user from token session table
+      if (verified != null) {
+        const tokenExist = tokenData.find((user) => {
+          if (user.username === verified.email && user.token === token) {
+            return true;
+          }
+        });
 
-      verifyToken(Admintoken)
-        .then((decoded) => {
-          // Token is valid
-          console.log("Token is valid");
-          console.log(decoded);
-
+        if (tokenExist) {
           const userToEdit = users.find(
             (user) => user.email === profileIdToUpdate
           );
@@ -480,19 +508,26 @@ function updateUserRole(req, res, userId) {
             res.writeHead(404, { "Content-Type": "application/json" });
             res.end(JSON.stringify({ message: "User not found" }));
           }
-        })
+        }
+      } else {
+        const tokenExistIndex = tokenData.findIndex(
+          (user) => user.token === token
+        );
 
-        .catch((err) => {
-          // Token is invalid or expired
-          console.error("Token verification failed");
-          console.error(err);
-          res.writeHead(403, { "Content-Type": "application/json" });
-          res.end(
-            JSON.stringify({
-              message: "user not autherized",
-            })
-          );
-        });
+        console.log("results", tokenExistIndex);
+        if (tokenExistIndex !== -1) {
+          tokenData.splice(tokenExistIndex, 1);
+        }
+        console.log("User logged out");
+        console.error("from  Update user profile Token verification failed");
+
+        res.writeHead(403, { "Content-Type": "application/json" });
+        res.end(
+          JSON.stringify({
+            message: " User Not Authenticated",
+          })
+        );
+      }
     } catch (error) {
       console.error("Error parsing JSON:", error);
       res.writeHead(400, { "Content-Type": "application/json" });
@@ -504,12 +539,20 @@ function updateUserRole(req, res, userId) {
 function deleteUserByAdmin(req, res, userId) {
   const profileIdToDelete = userId;
   try {
-    verifyToken(Admintoken)
-      .then((decoded) => {
-        // Token is valid
-        console.log("Token is valid");
-        console.log(decoded);
+    const token1 = req.headers["authorization"];
+    const token = token1.split(" ")[1];
+    console.log(token);
+    const verified = verifyToken1(token);
+    console.log("verified token for delete", verified);
+    //  find user from token session table
 
+    if (verified != null) {
+      const tokenExist = tokenData.find((user) => {
+        if (user.username === verified.email && user.token === token) {
+          return true;
+        }
+      });
+      if (tokenExist) {
         const userIndex = users.findIndex(
           (user) => user.email === profileIdToDelete
         );
@@ -540,19 +583,27 @@ function deleteUserByAdmin(req, res, userId) {
           res.writeHead(404, { "Content-Type": "application/json" });
           res.end(JSON.stringify({ message: "User not found" }));
         }
-      })
+      }
+    } else {
+      console.error(" Delete user func Token verification failed");
+      console.error(err);
+      const tokenExistIndex = tokenData.findIndex(
+        (user) => user.token === token
+      );
 
-      .catch((err) => {
-        // Token is invalid or expired
-        console.error(" Delete user func Token verification failed");
-        console.error(err);
-        res.writeHead(403, { "Content-Type": "application/json" });
-        res.end(
-          JSON.stringify({
-            message: "user not autherized",
-          })
-        );
-      });
+      console.log("results", tokenExistIndex);
+      if (tokenExistIndex !== -1) {
+        tokenData.splice(tokenExistIndex, 1);
+      }
+      console.log("User logged out");
+
+      res.writeHead(403, { "Content-Type": "application/json" });
+      res.end(
+        JSON.stringify({
+          message: " User Not Authorized",
+        })
+      );
+    }
   } catch (error) {
     console.error("Error parsing JSON:", error);
     res.writeHead(400, { "Content-Type": "application/json" });
@@ -562,34 +613,48 @@ function deleteUserByAdmin(req, res, userId) {
 // show projects list
 function showProjects(req, res) {
   try {
-    if (!token && !Admintoken) {
+    const token1 = req.headers["authorization"];
+    const token = token1.split(" ")[1];
+    console.log(token);
+    if (!token) {
       console.error("Token is missing");
       res.writeHead(403, { "Content-Type": "application/json" });
       res.end(JSON.stringify({ message: "Token is missing" }));
       return;
     }
-    verifyToken(token || Admintoken)
-      .then((decoded) => {
-        // Token is valid
-        console.log("Token is valid");
-        console.log(decoded);
-
+    const verified = verifyToken1(token);
+    console.log("verified token", verified);
+    if (verified != null) {
+      const tokenExist = tokenData.find((user) => {
+        if (user.username === verified.email && user.token === token) {
+          return true;
+        }
+      });
+      if (tokenExist) {
         res.writeHead(200, { "Content-Type": "application/json" });
         res.write(JSON.stringify(projectData));
         res.end();
-      })
+      }
+    } else {
+      console.error(" Project View  Token verification failed");
+      const tokenExistIndex = tokenData.findIndex(
+        (user) => user.token === token
+      );
 
-      .catch((err) => {
-        // Token is invalid or expired
-        console.error(" Project View  Token verification failed");
-        console.error(err);
-        res.writeHead(403, { "Content-Type": "application/json" });
-        res.end(
-          JSON.stringify({
-            message: "user not autherized",
-          })
-        );
-      });
+      console.log("results", tokenExistIndex);
+      if (tokenExistIndex !== -1) {
+        tokenData.splice(tokenExistIndex, 1);
+      }
+      console.log("User logged out");
+      console.error("from  show user profile Token verification failed");
+
+      res.writeHead(403, { "Content-Type": "application/json" });
+      res.end(
+        JSON.stringify({
+          message: " User Not Authorized",
+        })
+      );
+    }
   } catch (error) {
     console.error("Data not found ", error);
     res.writeHead(400, { "Content-Type": "application/json" });
@@ -634,21 +699,6 @@ function addProject(req, res) {
         );
         return;
       }
-      // console.log(newUserProject);
-      // for (let i = 0; i < newUserProject.img.length; i++) {
-      //   const file = newUserProject.img[i];
-      //   console.log("file: " + file);
-      //   if (file) {
-      //     reader = new FileReader();
-
-      //     reader.onload = (fileEvent) => {
-      //       const base64String = btoa(fileEvent.target.result);
-      //       console.log("base string: " + base64String);
-      //     };
-
-      //     reader.readAsBinaryString(file);
-      //   }
-      // }
 
       // remove extraData
       for (const key in newUserProject) {
@@ -684,12 +734,20 @@ function addProject(req, res) {
           (user) => user.email === newUserProject.username
         );
 
-        verifyToken(token)
-          .then((decoded) => {
-            // Token is valid
-            console.log("Token is valid for project");
-            console.log(decoded);
-
+        const token1 = req.headers["authorization"];
+        const token = token1.split(" ")[1];
+        console.log(token);
+        const verified = verifyToken1(token);
+        console.log("verified token", verified);
+        //  find user from token session table
+        if (verified != null) {
+          const tokenExist = tokenData.find((user) => {
+            if (user.username === verified.email && user.token === token) {
+              return true;
+            }
+          });
+          // if user exist in token table
+          if (tokenExist) {
             if (userExists) {
               const projectId = uuidv4();
               console.log(projectId);
@@ -704,19 +762,27 @@ function addProject(req, res) {
                 })
               );
             }
-          })
+          }
+        } else {
+          console.error("Token verification failed");
+          const tokenExistIndex = tokenData.findIndex(
+            (user) => user.token === token
+          );
 
-          .catch((err) => {
-            // Token is invalid or expired
-            console.error("Token verification failed");
-            console.error(err);
-            res.writeHead(403, { "Content-Type": "application/json" });
-            res.end(
-              JSON.stringify({
-                message: "user not autherized",
-              })
-            );
-          });
+          console.log("results", tokenExistIndex);
+          if (tokenExistIndex !== -1) {
+            tokenData.splice(tokenExistIndex, 1);
+          }
+          console.log("User logged out");
+          console.error("from  add user project Token verification failed");
+
+          res.writeHead(403, { "Content-Type": "application/json" });
+          res.end(
+            JSON.stringify({
+              message: " User Not Authenticated",
+            })
+          );
+        }
       }
     } catch (error) {
       console.error("Error parsing JSON:", error);
@@ -730,12 +796,20 @@ function deleteProject(req, res, projectId) {
   const projectIdToDelete = projectId;
 
   try {
-    verifyToken(token)
-      .then((decoded) => {
-        // Token is valid
-        console.log("Token is valid");
-        console.log(decoded);
-
+    const token1 = req.headers["authorization"];
+    const token = token1.split(" ")[1];
+    console.log(token);
+    const verified = verifyToken1(token);
+    console.log("verified token", verified);
+    //  find user from token session table
+    if (verified != null) {
+      const tokenExist = tokenData.find((user) => {
+        if (user.username === verified.email && user.token === token) {
+          return true;
+        }
+      });
+      // if user exist in token table
+      if (tokenExist) {
         const projectIndex = projectData.findIndex(
           (project) => project.projectId === projectIdToDelete
         );
@@ -769,10 +843,7 @@ function deleteProject(req, res, projectId) {
           res.writeHead(404, { "Content-Type": "application/json" });
           res.end(JSON.stringify({ message: "User not found" }));
         }
-      })
-
-      .catch((err) => {
-        // Token is invalid or expired
+      } else {
         console.error("Token verification failed");
         console.error(err);
         res.writeHead(403, { "Content-Type": "application/json" });
@@ -781,7 +852,8 @@ function deleteProject(req, res, projectId) {
             message: "user not autherized",
           })
         );
-      });
+      }
+    }
   } catch (error) {
     console.error("Error parsing JSON:", error);
     res.writeHead(400, { "Content-Type": "application/json" });
@@ -829,7 +901,6 @@ function updateProject(req, res, projectId) {
         !updatedInfo.title.trim() ||
         !updatedInfo.description.trim() ||
         updatedInfo.tags.length === 0 ||
-        !updatedInfo.img.trim() ||
         updatedInfo.languages.length === 0 ||
         updatedInfo.technology.length === 0
       ) {
@@ -863,12 +934,21 @@ function updateProject(req, res, projectId) {
         (project) => project.projectId === projectIdToUpdate
       );
       //Check user authentication
-      verifyToken(token)
-        .then((decoded) => {
-          // Token is valid
-          console.log("Token is valid");
-          console.log(decoded);
 
+      const token1 = req.headers["authorization"];
+      const token = token1.split(" ")[1];
+      console.log(token);
+      const verified = verifyToken1(token);
+      console.log("verified token", verified);
+      //  find user from token session table
+      if (verified != null) {
+        const tokenExist = tokenData.find((user) => {
+          if (user.username === verified.email && user.token === token) {
+            return true;
+          }
+        });
+        // if user exist in token table
+        if (tokenExist) {
           const userExists = users.find(
             (user) => user.email === projectData[projectIndex].username
           );
@@ -908,19 +988,27 @@ function updateProject(req, res, projectId) {
             res.writeHead(404, { "Content-Type": "application/json" });
             res.end(JSON.stringify({ message: "Project not found" }));
           }
-        })
+        }
+      } else {
+        console.error("Token verification failed");
+        const tokenExistIndex = tokenData.findIndex(
+          (user) => user.token === token
+        );
 
-        .catch((err) => {
-          // Token is invalid or expired
-          console.error("Token verification failed");
-          console.error(err);
-          res.writeHead(403, { "Content-Type": "application/json" });
-          res.end(
-            JSON.stringify({
-              message: "user not autherized",
-            })
-          );
-        });
+        console.log("results", tokenExistIndex);
+        if (tokenExistIndex !== -1) {
+          tokenData.splice(tokenExistIndex, 1);
+        }
+        console.log("User logged out");
+        console.error("from  show user profile Token verification failed");
+
+        res.writeHead(403, { "Content-Type": "application/json" });
+        res.end(
+          JSON.stringify({
+            message: " User Not Authenticated",
+          })
+        );
+      }
     } catch (error) {
       console.error("Error parsing JSON:", error);
       res.writeHead(400, { "Content-Type": "application/json" });
@@ -1001,11 +1089,20 @@ function updateProfileByUser(req, res, userId) {
         (user) => user.email === profileIdToUpdate
       );
 
-      verifyToken(token)
-        .then((decoded) => {
-          // Token is valid
-          console.log("Token is valid");
-          console.log(decoded);
+      const token1 = req.headers["authorization"];
+      const token = token1.split(" ")[1];
+      console.log(token);
+      const verified = verifyToken1(token);
+      console.log("verified token", verified);
+      //  find user from token session table
+      if (verified != null) {
+        const tokenExist = tokenData.find((user) => {
+          if (user.username === verified.email && user.token === token) {
+            return true;
+          }
+        });
+
+        if (tokenExist) {
           if (userIndex !== -1) {
             users[userIndex].name = updatedInfo.name;
             users[userIndex].password = updatedInfo.password;
@@ -1017,19 +1114,47 @@ function updateProfileByUser(req, res, userId) {
             res.writeHead(404, { "Content-Type": "application/json" });
             res.end(JSON.stringify({ message: "User not found" }));
           }
-        })
+        }
+      } else {
+        console.error("Token verification failed");
+        console.error(err);
+        res.writeHead(403, { "Content-Type": "application/json" });
+        res.end(
+          JSON.stringify({
+            message: "user not autherized",
+          })
+        );
+      }
 
-        .catch((err) => {
-          // Token is invalid or expired
-          console.error("Token verification failed");
-          console.error(err);
-          res.writeHead(403, { "Content-Type": "application/json" });
-          res.end(
-            JSON.stringify({
-              message: "user not autherized",
-            })
-          );
-        });
+      // verifyToken(token)
+      //   .then((decoded) => {
+      //     // Token is valid
+      //     console.log("Token is valid");
+      //     console.log(decoded);
+      //     if (userIndex !== -1) {
+      //       users[userIndex].name = updatedInfo.name;
+      //       users[userIndex].password = updatedInfo.password;
+      //       users[userIndex].phoneNumber = updatedInfo.phoneNumber || "";
+      //       users[userIndex].skills = updatedInfo.skills || [];
+      //       res.writeHead(200, { "Content-Type": "application/json" });
+      //       res.end(JSON.stringify({ message: "User updated successfully" }));
+      //     } else {
+      //       res.writeHead(404, { "Content-Type": "application/json" });
+      //       res.end(JSON.stringify({ message: "User not found" }));
+      //     }
+      //   })
+
+      //   .catch((err) => {
+      //     // Token is invalid or expired
+      //     console.error("Token verification failed");
+      //     console.error(err);
+      //     res.writeHead(403, { "Content-Type": "application/json" });
+      //     res.end(
+      //       JSON.stringify({
+      //         message: "user not autherized",
+      //       })
+      //     );
+      //   });
     } catch (error) {
       console.error("Error parsing JSON:", error);
       res.writeHead(400, { "Content-Type": "application/json" });
@@ -1043,6 +1168,9 @@ function updateProfileByUser(req, res, userId) {
 }
 // show user profile
 function showUserForProfile(req, res) {
+  const token1 = req.headers["authorization"];
+  const token = token1.split(" ")[1];
+  console.log(token);
   if (!token) {
     console.error("Token is missing");
     res.writeHead(403, { "Content-Type": "application/json" });
@@ -1050,34 +1178,65 @@ function showUserForProfile(req, res) {
     return;
   }
   try {
-    verifyToken(token)
-      .then((decoded) => {
-        // Token is valid
-        console.log("Token is valid");
-        console.log(decoded);
+    const verified = verifyToken1(token);
+    console.log("verified token for show profile", verified);
+    //  find user from token session table
+    if (verified != null) {
+      const tokenExist = tokenData.find((user) => {
+        if (user.username === verified.email && user.token === token) {
+          return true;
+        }
+      });
+      // if user exist in token table
+      if (tokenExist) {
         res.writeHead(200, { "Content-Type": "application/json" });
         res.end(JSON.stringify(users));
-      })
+      }
+    } else {
+      console.error("Token verification failed");
+      const tokenExistIndex = tokenData.findIndex(
+        (user) => user.token === token
+      );
 
-      .catch((err) => {
-        // Token is invalid or expired
-        console.error("Token verification failed");
-        console.error(err);
-        res.writeHead(403, { "Content-Type": "application/json" });
-        res.end(
-          JSON.stringify({
-            message: "user not autherized",
-          })
-        );
-      });
+      console.log("results", tokenExistIndex);
+      if (tokenExistIndex !== -1) {
+        tokenData.splice(tokenExistIndex, 1);
+      }
+      console.log("User logged out");
+      console.error("from  show user profile Token verification failed");
+
+      res.writeHead(403, { "Content-Type": "application/json" });
+      res.end(
+        JSON.stringify({
+          message: " User Not Authorized",
+        })
+      );
+    }
+
+    //   verifyToken(token)
+    //     .then((decoded) => {
+    //       // Token is valid
+    //       console.log("Token is valid");
+    //       console.log(decoded);
+
+    //     .catch((err) => {
+    //       // Token is invalid or expired
+
+    //     });
+    // } catch (error) {
+    //   console.error("Error parsing JSON:", error);
+    //   res.writeHead(400, { "Content-Type": "application/json" });
+    //   res.end(JSON.stringify({ message: "Invalid JSON data" }));
+    // }
   } catch (error) {
-    console.error("Error parsing JSON:", error);
-    res.writeHead(400, { "Content-Type": "application/json" });
-    res.end(JSON.stringify({ message: "Invalid JSON data" }));
+    console.log(error);
   }
 }
 // show education in profile
 function showEducation(req, res) {
+  const token1 = req.headers["authorization"];
+  const token = token1.split(" ")[1];
+
   if (!token) {
     console.error("Token is missing");
     res.writeHead(403, { "Content-Type": "application/json" });
@@ -1085,19 +1244,21 @@ function showEducation(req, res) {
     return;
   }
   try {
-    verifyToken(token)
-      .then((decoded) => {
-        // Token is valid
-        console.log("Token  is valid for education");
-        console.log(decoded);
-
+    const verified = verifyToken1(token);
+    console.log("verified token for show education", verified);
+    //  find user from token session table
+    if (verified != null) {
+      const tokenExist = tokenData.find((user) => {
+        if (user.username === verified.email && user.token === token) {
+          return true;
+        }
+      });
+      // if user exist in token table
+      if (tokenExist) {
         res.writeHead(200, { "Content-Type": "application/json" });
         res.write(JSON.stringify(education));
         res.end();
-      })
-
-      .catch((err) => {
-        // Token is invalid or expired
+      } else {
         console.error("Token verification failed");
         console.error(err);
         res.writeHead(403, { "Content-Type": "application/json" });
@@ -1106,7 +1267,27 @@ function showEducation(req, res) {
             message: "user not autherized",
           })
         );
-      });
+      }
+    } else {
+      console.error("Token verification failed");
+      const tokenExistIndex = tokenData.findIndex(
+        (user) => user.token === token
+      );
+
+      console.log("results", tokenExistIndex);
+      if (tokenExistIndex !== -1) {
+        tokenData.splice(tokenExistIndex, 1);
+      }
+      console.log("User logged out");
+      console.error("from  show educatiom profile Token verification failed");
+
+      res.writeHead(403, { "Content-Type": "application/json" });
+      res.end(
+        JSON.stringify({
+          message: " User Not Authorized",
+        })
+      );
+    }
   } catch (error) {
     console.error("Data not found ", error);
     res.writeHead(400, { "Content-Type": "application/json" });
@@ -1182,12 +1363,20 @@ function addEduactionOfUser(req, res) {
         );
         return;
       }
-      verifyToken(token)
-        .then((decoded) => {
-          // Token is valid
-          console.log("Token is valid ADD education");
-          console.log(decoded);
-
+      const token1 = req.headers["authorization"];
+      const token = token1.split(" ")[1];
+      console.log(token);
+      const verified = verifyToken1(token);
+      console.log("verified token for add education", verified);
+      //  find user from token session table
+      if (verified != null) {
+        const tokenExist = tokenData.find((user) => {
+          if (user.username === verified.email && user.token === token) {
+            return true;
+          }
+        });
+        // if user exist in token table
+        if (tokenExist) {
           const eduId = uuidv4();
           console.log(eduId);
           const educationWithId = { eduId, ...newUser };
@@ -1197,19 +1386,28 @@ function addEduactionOfUser(req, res) {
           res.end(
             JSON.stringify({ message: "user added successfully", education })
           );
-        })
+        }
+      } else {
+        console.error("Token verification failed");
 
-        .catch((err) => {
-          // Token is invalid or expired
-          console.error("Token verification failed");
-          console.error(err);
-          res.writeHead(403, { "Content-Type": "application/json" });
-          res.end(
-            JSON.stringify({
-              message: "user not autherized",
-            })
-          );
-        });
+        const tokenExistIndex = tokenData.findIndex(
+          (user) => user.token === token
+        );
+
+        console.log("results", tokenExistIndex);
+        if (tokenExistIndex !== -1) {
+          tokenData.splice(tokenExistIndex, 1);
+        }
+        console.log("User logged out");
+        console.error("from  add education profile Token verification failed");
+
+        res.writeHead(403, { "Content-Type": "application/json" });
+        res.end(
+          JSON.stringify({
+            message: " User Not Authorized",
+          })
+        );
+      }
     } catch (error) {
       console.error("Error parsing JSON:", error);
       res.writeHead(400, { "Content-Type": "application/json" });
@@ -1287,11 +1485,20 @@ function updateEducation(req, res, EducationId) {
         (project) => project.eduId === projectIdToUpdate
       );
       //Check user authentication
-      verifyToken(token)
-        .then((decoded) => {
-          // Token is valid
-          console.log("Token is valid EDIT EDUCATION");
-          console.log(decoded);
+      const token1 = req.headers["authorization"];
+      const token = token1.split(" ")[1];
+      console.log(token);
+      const verified = verifyToken1(token);
+      console.log("verified token", verified);
+      //  find user from token session table
+      if (verified != null) {
+        const tokenExist = tokenData.find((user) => {
+          if (user.username === verified.email && user.token === token) {
+            return true;
+          }
+        });
+        // if user exist in token table
+        if (tokenExist) {
           console.log(projectIndex);
           if (projectIndex !== -1) {
             const updatedProject = {
@@ -1317,19 +1524,29 @@ function updateEducation(req, res, EducationId) {
             res.writeHead(404, { "Content-Type": "application/json" });
             res.end(JSON.stringify({ message: "education not found" }));
           }
-        })
+        }
+      } else {
+        console.error("Token verification failed");
+        const tokenExistIndex = tokenData.findIndex(
+          (user) => user.token === token
+        );
 
-        .catch((err) => {
-          // Token is invalid or expired
-          console.error("Token verification failed");
-          console.error(err);
-          res.writeHead(403, { "Content-Type": "application/json" });
-          res.end(
-            JSON.stringify({
-              message: "user not autherized",
-            })
-          );
-        });
+        console.log("results", tokenExistIndex);
+        if (tokenExistIndex !== -1) {
+          tokenData.splice(tokenExistIndex, 1);
+        }
+        console.log("User logged out");
+        console.error(
+          "from  Update education profile Token verification failed"
+        );
+
+        res.writeHead(403, { "Content-Type": "application/json" });
+        res.end(
+          JSON.stringify({
+            message: " User Not Authorized",
+          })
+        );
+      }
     } catch (error) {
       console.error("Error parsing JSON:", error);
       res.writeHead(400, { "Content-Type": "application/json" });
@@ -1351,11 +1568,19 @@ function deleteEducation(req, res, EducationId) {
       if (user.eduId === DeleteIdToUpdate) return user.eduId;
     });
     console.log(educationIndex);
-    verifyToken(token)
-      .then((decoded) => {
-        // Token is valid
-        console.log("Token is valid for delete education");
-        console.log(decoded);
+    const token1 = req.headers["authorization"];
+    const token = token1.split(" ")[1];
+    console.log(token);
+    const verified = verifyToken1(token);
+    console.log("verified token", verified);
+    //  find user from token session table
+    if (verified != null) {
+      const tokenExist = tokenData.find((user) => {
+        if (user.username === verified.email && user.token === token) {
+          return true;
+        }
+      });
+      if (tokenExist) {
         if (educationIndex !== -1) {
           education.splice(educationIndex, 1);
 
@@ -1370,19 +1595,28 @@ function deleteEducation(req, res, EducationId) {
           res.writeHead(404, { "Content-Type": "application/json" });
           res.end(JSON.stringify({ message: "Education not found" }));
         }
-      })
+      }
+    } else {
+      // Token is invalid or expired
+      console.error("Token verification failed");
+      const tokenExistIndex = tokenData.findIndex(
+        (user) => user.token === token
+      );
 
-      .catch((err) => {
-        // Token is invalid or expired
-        console.error("Token verification failed");
-        console.error(err);
-        res.writeHead(403, { "Content-Type": "application/json" });
-        res.end(
-          JSON.stringify({
-            message: "user not autherized",
-          })
-        );
-      });
+      console.log("results", tokenExistIndex);
+      if (tokenExistIndex !== -1) {
+        tokenData.splice(tokenExistIndex, 1);
+      }
+      console.log("User logged out");
+      console.error("from  delete education profile Token verification failed");
+
+      res.writeHead(403, { "Content-Type": "application/json" });
+      res.end(
+        JSON.stringify({
+          message: " User Not Authorized",
+        })
+      );
+    }
   } catch (error) {
     console.error("Error parsing JSON:", error);
     res.writeHead(400, { "Content-Type": "application/json" });
@@ -1392,35 +1626,54 @@ function deleteEducation(req, res, EducationId) {
 // show Experience
 function showExperience(req, res) {
   {
+    const token1 = req.headers["authorization"];
+    const token = token1.split(" ")[1];
+    console.log(token);
     if (!token) {
       console.error("Token is missing");
       res.writeHead(403, { "Content-Type": "application/json" });
       res.end(JSON.stringify({ message: "Token is missing" }));
       return;
     }
-    try {
-      verifyToken(token)
-        .then((decoded) => {
-          // Token is valid
-          console.log("Token is valid for showing experience");
-          console.log(decoded);
 
+    try {
+      const verified = verifyToken1(token);
+      console.log("verified token", verified);
+      //  find user from token session table
+      if (verified != null) {
+        const tokenExist = tokenData.find((user) => {
+          if (user.username === verified.email && user.token === token) {
+            return true;
+          }
+        });
+
+        if (tokenExist) {
           res.writeHead(200, { "Content-Type": "application/json" });
           res.write(JSON.stringify(experience));
           res.end();
-        })
+        }
+      } else {
+        console.error("Token verification failed");
+        const tokenExistIndex = tokenData.findIndex(
+          (user) => user.token === token
+        );
 
-        .catch((err) => {
-          // Token is invalid or expired
-          console.error("Token verification failed");
-          console.error(err);
-          res.writeHead(403, { "Content-Type": "application/json" });
-          res.end(
-            JSON.stringify({
-              message: "user not autherized",
-            })
-          );
-        });
+        console.log("results", tokenExistIndex);
+        if (tokenExistIndex !== -1) {
+          tokenData.splice(tokenExistIndex, 1);
+        }
+        console.log("User logged out");
+        console.error(
+          "from  show experience profile Token verification failed"
+        );
+
+        res.writeHead(403, { "Content-Type": "application/json" });
+        res.end(
+          JSON.stringify({
+            message: " User Not Authorized",
+          })
+        );
+      }
     } catch (error) {
       console.error("Data not found ", error);
       res.writeHead(400, { "Content-Type": "application/json" });
@@ -1499,11 +1752,21 @@ function addExperience(req, res) {
         );
         return;
       }
-      verifyToken(token)
-        .then((decoded) => {
-          // Token is valid
-          console.log("Token is valid");
-          console.log(decoded);
+
+      const token1 = req.headers["authorization"];
+      const token = token1.split(" ")[1];
+      console.log(token);
+      const verified = verifyToken1(token);
+      console.log("verified token", verified);
+      //  find user from token session table
+      if (verified != null) {
+        const tokenExist = tokenData.find((user) => {
+          if (user.username === verified.email && user.token === token) {
+            return true;
+          }
+        });
+        // if user exist in token table
+        if (tokenExist) {
           const expId = uuidv4();
           console.log(expId);
           const educationWithId = { expId, ...newExperience };
@@ -1513,19 +1776,29 @@ function addExperience(req, res) {
           res.end(
             JSON.stringify({ message: "user added successfully", experience })
           );
-        })
+        }
+      } else {
+        console.error("Token verification failed");
+        const tokenExistIndex = tokenData.findIndex(
+          (user) => user.token === token
+        );
 
-        .catch((err) => {
-          // Token is invalid or expired
-          console.error("Token verification failed");
-          console.error(err);
-          res.writeHead(403, { "Content-Type": "application/json" });
-          res.end(
-            JSON.stringify({
-              message: "user not autherized",
-            })
-          );
-        });
+        console.log("results", tokenExistIndex);
+        if (tokenExistIndex !== -1) {
+          tokenData.splice(tokenExistIndex, 1);
+        }
+        console.log("User logged out");
+        console.error(
+          "from  add education user profile Token verification failed"
+        );
+
+        res.writeHead(403, { "Content-Type": "application/json" });
+        res.end(
+          JSON.stringify({
+            message: " User Not Authorized",
+          })
+        );
+      }
     } catch (error) {
       console.error("Error parsing JSON:", error);
       res.writeHead(400, { "Content-Type": "application/json" });
@@ -1603,12 +1876,20 @@ function updateExperience(req, res, experienceId) {
       const experienceIndex = experience.findIndex(
         (project) => project.expId === expIdToUpdate
       );
-
-      verifyToken(token)
-        .then((decoded) => {
-          // Token is valid
-          console.log("Token is valid update exprience");
-          console.log(decoded);
+      const token1 = req.headers["authorization"];
+      const token = token1.split(" ")[1];
+      console.log(token);
+      const verified = verifyToken1(token);
+      console.log("verified token", verified);
+      //  find user from token session table
+      if (verified != null) {
+        const tokenExist = tokenData.find((user) => {
+          if (user.username === verified.email && user.token === token) {
+            return true;
+          }
+        });
+        // if user exist in token table
+        if (tokenExist) {
           console.log(experienceIndex);
           if (experienceIndex !== -1) {
             const updatedExperience = {
@@ -1633,19 +1914,29 @@ function updateExperience(req, res, experienceId) {
             res.writeHead(404, { "Content-Type": "application/json" });
             res.end(JSON.stringify({ message: "experience not found" }));
           }
-        })
+        }
+      } else {
+        console.error("Token verification failed");
+        const tokenExistIndex = tokenData.findIndex(
+          (user) => user.token === token
+        );
 
-        .catch((err) => {
-          // Token is invalid or expired
-          console.error("Token verification failed");
-          console.error(err);
-          res.writeHead(403, { "Content-Type": "application/json" });
-          res.end(
-            JSON.stringify({
-              message: "user not autherized",
-            })
-          );
-        });
+        console.log("results", tokenExistIndex);
+        if (tokenExistIndex !== -1) {
+          tokenData.splice(tokenExistIndex, 1);
+        }
+        console.log("User logged out");
+        console.error(
+          "from update education user profile Token verification failed"
+        );
+
+        res.writeHead(403, { "Content-Type": "application/json" });
+        res.end(
+          JSON.stringify({
+            message: " User Not Authorized",
+          })
+        );
+      }
     } catch (error) {
       console.error("Error parsing JSON:", error);
       res.writeHead(400, { "Content-Type": "application/json" });
@@ -1667,11 +1958,20 @@ function deleteExperiences(req, res, experienceId) {
       if (user.expId === DeleteIdToUpdate) return user.expId;
     });
     console.log(expIndex);
-    verifyToken(token)
-      .then((decoded) => {
-        // Token is valid
-        console.log("Token is valid");
-        console.log(decoded);
+    const token1 = req.headers["authorization"];
+    const token = token1.split(" ")[1];
+    console.log(token);
+    const verified = verifyToken1(token);
+    console.log("verified token", verified);
+    //  find user from token session table
+    if (verified != null) {
+      const tokenExist = tokenData.find((user) => {
+        if (user.username === verified.email && user.token === token) {
+          return true;
+        }
+      });
+      // if user exist in token table
+      if (tokenExist) {
         if (expIndex !== -1) {
           experience.splice(expIndex, 1);
 
@@ -1686,19 +1986,29 @@ function deleteExperiences(req, res, experienceId) {
           res.writeHead(404, { "Content-Type": "application/json" });
           res.end(JSON.stringify({ message: "Education not found" }));
         }
-      })
+      }
+    } else {
+      console.error("Token verification failed");
+      const tokenExistIndex = tokenData.findIndex(
+        (user) => user.token === token
+      );
 
-      .catch((err) => {
-        // Token is invalid or expired
-        console.error("Token verification failed");
-        console.error(err);
-        res.writeHead(403, { "Content-Type": "application/json" });
-        res.end(
-          JSON.stringify({
-            message: "user not autherized",
-          })
-        );
-      });
+      console.log("results", tokenExistIndex);
+      if (tokenExistIndex !== -1) {
+        tokenData.splice(tokenExistIndex, 1);
+      }
+      console.log("User logged out");
+      console.error(
+        "from  delete experience user profile Token verification failed"
+      );
+
+      res.writeHead(403, { "Content-Type": "application/json" });
+      res.end(
+        JSON.stringify({
+          message: " User Not Authorized",
+        })
+      );
+    }
   } catch (error) {
     console.error("Error parsing JSON:", error);
     res.writeHead(400, { "Content-Type": "application/json" });
@@ -1708,15 +2018,43 @@ function deleteExperiences(req, res, experienceId) {
 // logout user and admin
 function logout(req, res) {
   try {
-    token = null;
-    Admintoken = null;
-    console.log("User logged out");
-    res.writeHead(200, { "Content-Type": "application/json" });
-    res.end(JSON.stringify({ message: "User Logout" }));
+    const token1 = req.headers["authorization"];
+    const token = token1.split(" ")[1];
+
+    const verified = verifyToken1(token);
+    console.log("verified token", verified);
+    if (verified !== null) {
+      const tokenExistIndex = tokenData.findIndex((user) => {
+        return user.username === verified.email && user.token === token;
+      });
+      console.log("results", tokenExistIndex);
+      if (tokenExistIndex !== -1) {
+        tokenData.splice(tokenExistIndex, 1);
+      }
+      console.log("User logged out");
+      res.writeHead(200, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ message: "User logged out ", tokenData }));
+    } else {
+      res.writeHead(400, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ message: "User not found " }));
+    }
   } catch (error) {
-    console.error("Error parsing JSON:", error);
     res.writeHead(400, { "Content-Type": "application/json" });
-    res.end(JSON.stringify({ message: "Invalid JSON data" }));
+    res.end(JSON.stringify({ message: "invalid json " }));
+  }
+}
+
+// token showing
+
+function tokenshow(req, res) {
+  try {
+    res.writeHead(200, { "Content-Type": "application/json" });
+    res.write(JSON.stringify(tokenData));
+    res.end();
+  } catch (error) {
+    res.writeHead(400, { "Content-Type": "application/json" });
+    res.write(JSON.stringify(error));
+    res.end();
   }
 }
 export {
@@ -1741,4 +2079,5 @@ export {
   updateExperience,
   deleteExperiences,
   logout,
+  tokenshow,
 };

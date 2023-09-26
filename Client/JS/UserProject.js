@@ -1,12 +1,17 @@
-import logout from "../JS/index.js";
-
+import { logout, getLocalStorageWithExpiry } from "../JS/index.js";
+const token1 = getLocalStorageWithExpiry("token");
+console.log(token1);
+const token = `"${token1}"`;
+console.log("User token:", token);
 const redirct = localStorage.getItem("user");
-if (!redirct) {
+if (!token1) {
   const url = "http://127.0.0.1:5500/Client/HTML/login.html";
   window.location.href = url;
 }
+////////////////////////////Base 64 for Img Upload///
 var base64String;
 var reader;
+////////////////////////////////////////
 const user1 = JSON.parse(localStorage.getItem("user"));
 // validation func
 function ValidationInputByRegex(inputElement, regex) {
@@ -25,6 +30,10 @@ async function deleteUserProject(projectId) {
       `http://localhost:8000/projects/${projectId}`,
       {
         method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token.substring(1, token.length - 1)}`,
+        },
       }
     );
 
@@ -53,7 +62,12 @@ async function userpro() {
   const userModal = document.querySelector(".modalmodal");
   const userModalDetails = document.querySelector(".usermodalDetails");
   const filter = searchInput.value.trim().toUpperCase();
-  await fetch("http://localhost:8000/projects")
+  await fetch("http://localhost:8000/projects", {
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token.substring(1, token.length - 1)}`,
+    },
+  })
     .then((res) => res.json())
     .then((userProjectData) => {
       console.log(userProjectData);
@@ -151,14 +165,13 @@ async function userpro() {
             const editdata31 = document.createElement("td");
             const editdata32 = document.createElement("td");
             const editdata321 = document.createElement("input");
-            const fileNameInput = document.createElement("input");
-            const type = "png" || "jpg" || "jpeg";
-            fileNameInput.value = atob(
-              `data:image/${type};base64,${project.img}`
-            );
-            fileNameInput.id = "file-name";
-            fileNameInput.readOnly = "true";
+            // const fileNameInput = document.createElement("input");
             editdata321.type = "file";
+            const type = "png" || "jpg" || "jpeg";
+            // fileNameInput.value = `${project.img}`;
+            // fileNameInput.id = "file-name";
+            // fileNameInput.readOnly = "true";
+            // editdata321.type = "file";
 
             editdata321.addEventListener("change", (event) => {
               const selectedFiles = event.target.files;
@@ -210,7 +223,7 @@ async function userpro() {
               if (file) {
                 fileNameInput.value = file.name;
               } else {
-                fileNameInput.value = "";
+                fileNameInput.value = `data:image/${imageFormat};base64,`;
               }
             });
             editdata41.textContent = "Tags:";
@@ -226,7 +239,7 @@ async function userpro() {
             editdata52.appendChild(editdata521); //2nd td
             editdata42.appendChild(editdata421);
             editdata32.appendChild(editdata321);
-            editdata32.appendChild(fileNameInput); //2nd td
+            //    editdata32.appendChild(fileNameInput); //2nd td
             editdata22.appendChild(editdata221); //2nd td
             editdata12.appendChild(editdata121); //2nd td
             editrow1.appendChild(editdata11);
@@ -271,7 +284,8 @@ async function userpro() {
                 userProjectData[projectIndex].username = user1.email;
                 userProjectData[projectIndex].title = editdata121.value;
                 userProjectData[projectIndex].description = editdata221.value;
-                userProjectData[projectIndex].img = base64String;
+                userProjectData[projectIndex].img =
+                  base64String || `${project.img}`;
                 userProjectData[projectIndex].tags =
                   editdata421.value.split(",");
                 userProjectData[projectIndex].languages =
@@ -290,6 +304,10 @@ async function userpro() {
                       method: "PUT",
                       headers: {
                         "Content-Type": "application/json",
+                        Authorization: `Bearer ${token.substring(
+                          1,
+                          token.length - 1
+                        )}`,
                       },
                       body: JSON.stringify(updatedProject), // Convert user object to JSON
                     }
@@ -512,6 +530,7 @@ addProjectFunction.onclick = (e) => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${token.substring(1, token.length - 1)}`,
         },
         body: JSON.stringify(addprojectDataForm), // Convert user object to JSON
       });
