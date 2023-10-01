@@ -1,5 +1,19 @@
-import { logout, getLocalStorageWithExpiry } from "../JS/index.js";
 const token1 = getLocalStorageWithExpiry("token");
+function getLocalStorageWithExpiry(key) {
+  const item = localStorage.getItem(key);
+  if (!item) return null;
+
+  const parsedItem = JSON.parse(item);
+  const now = new Date();
+
+  if (now.getTime() > parsedItem.expiry) {
+    // Item has expired, so remove it from localStorage
+    localStorage.removeItem(key);
+    return null;
+  }
+
+  return parsedItem.value;
+}
 console.log(token1);
 const token = `"${token1}"`;
 console.log("User token:", token);
@@ -41,11 +55,10 @@ async function userProfile() {
 
     const user12 = users.filter((user) => user.email === loginUser.email);
     console.log(user12);
-    let user1 = user12.shift();
+    let user1 = users[0];
     if (user1) {
       const emailProfile = document.querySelector(".emailProfile");
       const nameProfile = document.querySelector(".nameProfile");
-      const passwordProfile = document.querySelector(".passwordProfile");
       const roleProfile = document.querySelector(".roleProfile");
       const numberProfile = document.querySelector(".numberProfile");
       const educationProfile = document.querySelector(".educationProfile");
@@ -56,9 +69,8 @@ async function userProfile() {
       experienceProfile.innerHTML = "";
       emailProfile.textContent = user1.email;
       nameProfile.textContent = user1.name;
-      passwordProfile.textContent = user1.password;
       roleProfile.textContent = user1.role;
-      numberProfile.textContent = user1.phoneNumber;
+      numberProfile.textContent = user1.phone;
       const educationList = document.createElement("ul");
       if (user1.education) {
         user1.education.forEach((educationItem) => {
@@ -91,10 +103,10 @@ async function userProfile() {
         });
       }
       educationProfile.appendChild(educationList);
-
+      const skillArr = user1.skill.split(",");
       const skillsList = document.createElement("ul");
-      if (user1.skills) {
-        user1.skills.forEach((skill) => {
+      if (skillArr) {
+        skillArr.forEach((skill) => {
           const listItem = document.createElement("li");
           listItem.style.listStyle = "none";
           listItem.textContent = skill;
@@ -103,45 +115,12 @@ async function userProfile() {
       }
       skillsProfile.appendChild(skillsList);
       const expList = document.createElement("ul");
-      // if (user1.experience) {
-      //   user1.experience.forEach((exp) => {
-      //     console.log(exp);
-      //     const listItem = document.createElement("li");
 
-      //     listItem.style.marginLeft = "10px";
-      //     const des = document.createElement("h3");
-      //     const com = document.createElement("h4");
-      //     const date = document.createElement("div");
-      //     const startDate = document.createElement("div");
-      //     const endDate = document.createElement("div");
-      //     des.textContent = exp.designation;
-
-      //     com.textContent = exp.company;
-      //     startDate.textContent = exp.startDate;
-      //     endDate.textContent = exp.EndDate;
-      //     const lineBreak = document.createElement("br");
-      //     date.appendChild(startDate);
-      //     date.appendChild(endDate);
-      //     date.style.display = "inline";
-      //     startDate.style.float = "left";
-
-      //     endDate.style.float = "left";
-      //     endDate.style.marginLeft = "10px";
-      //     listItem.appendChild(des);
-
-      //     listItem.appendChild(com);
-      //     listItem.appendChild(date);
-      //     listItem.appendChild(lineBreak);
-      //     expList.appendChild(listItem);
-      //     // listItem.style.listStyle = "none";
-      //   });
-      // }
       console.log(expList);
       experienceProfile.appendChild(expList);
     }
   } catch (error) {
     console.log("Fetch error:", error);
-    alert("Fetch error:", error);
   }
 }
 // Function to create an education edit form
@@ -291,16 +270,29 @@ function createEducationEditForm(educationItem, index) {
       const updatedUniversity = universityInput.value;
       const updatedStartDate = startDateInput.value;
       const updatedEndDate = endDateInput.value;
-
+      if (
+        degreeInput.value == "" ||
+        universityInput.value == "" ||
+        startDateInput.value == ""
+      ) {
+        alert("all fields are required");
+        return;
+      }
+      if (new Date(startDateInput.value) >= new Date(endDateInput.value)) {
+        alert("Start date must be before end date");
+        return;
+      }
       // Create a new education object with the updated data
       const updatedEducationItem = {
-        username: loginUser.email,
-        eduId: index,
         degree: updatedDegree,
         university: updatedUniversity,
         startDate: updatedStartDate,
         endDate: updatedEndDate,
       };
+      if (new Date(updatedStartDate) >= new Date(updatedEndDate)) {
+        alert("Start date must be before end date");
+        return;
+      }
       console.log(updatedEducationItem);
       const res = await fetch(
         `http://localhost:8000/educationUpdate/${index}`,
@@ -388,12 +380,7 @@ async function createEducationTable() {
     headerRow.appendChild(deleteHeader); // Append delete header to the table
     educationTable.appendChild(headerRow);
 
-    // Populate the table with education data
-
-    const user12 = users.filter((user) => user.username === loginUser.email);
-    console.log(user12);
-    // let user1 = user12;
-    user12.forEach((item, index) => {
+    users.forEach((item, index) => {
       const row = document.createElement("tr");
       const degreeCell = document.createElement("td");
       degreeCell.textContent = item.degree;
@@ -416,7 +403,7 @@ async function createEducationTable() {
 
       // Replace with your button
       editButton.addEventListener("click", () => {
-        const educationEditForm11 = createEducationEditForm(item, item.eduId);
+        const educationEditForm11 = createEducationEditForm(item, item.ID);
         // Assuming you have a container element to append the form to
         const formContainer = document.getElementById("formContainer");
         educationEditForm.appendChild(educationEditForm11);
@@ -433,7 +420,7 @@ async function createEducationTable() {
       deleteButton.addEventListener("click", async () => {
         // Remove the education item from the user's education array
         const res = await fetch(
-          `http://localhost:8000/educationDelete/${item.eduId}`,
+          `http://localhost:8000/educationDelete/${item.ID}`,
           {
             method: "DELETE",
             headers: {
@@ -612,15 +599,26 @@ function createExperienceEditForm(experienceItem, index) {
       const updatedStartDate = startDateInput.value;
       const updatedEndDate = endDateInput.value;
 
+      if (
+        positionInput.value == "" ||
+        companyInput.value == "" ||
+        startDateInput.value == ""
+      ) {
+        alert("all fields are required");
+        return;
+      }
+      if (new Date(startDateInput.value) >= new Date(endDateInput.value)) {
+        alert("Start date must be before end date");
+        return;
+      }
       // Create a new experience object with the updated data
       const updatedExperienceItem = {
-        username: loginUser.email,
-        expId: index,
         position: updatedPosition,
         company: updatedCompany,
         startDate: updatedStartDate,
         endDate: updatedEndDate,
       };
+
       console.log(index);
       const res = await fetch(
         `http://localhost:8000/experienceUpdate/${index}`,
@@ -713,85 +711,89 @@ async function createExperienceTable() {
     const users = await response.json();
 
     console.log(users);
-
-    const user12 = users.filter((user) => user.username === loginUser.email);
-    console.log(user12);
-
-    user12.forEach((item, index) => {
-      const row = document.createElement("tr");
-      const positionCell = document.createElement("td");
-      positionCell.textContent = item.position;
-      const companyCell = document.createElement("td");
-      companyCell.textContent = item.company;
-      const startDateCell = document.createElement("td");
-      startDateCell.textContent = item.startDate;
-      const endDateCell = document.createElement("td");
-      endDateCell.textContent = item.endDate;
-      const editCell = document.createElement("td");
-      const editButton = document.createElement("button");
-      editButton.textContent = "Edit";
-      editButton.style.background = "lightgreen";
-      editButton.style.padding = "5px 20px";
-      editButton.style.border = "none";
-      editButton.style.fontWeight = "bold";
-      const experienceEditForm = document.querySelector(".experienceEditForm");
-      if (experienceEditForm) {
-        editButton.addEventListener("click", () => {
-          const experienceEditForm11 = createExperienceEditForm(
-            item,
-            item.expId
-          );
-
-          experienceEditForm.appendChild(experienceEditForm11);
-        });
-      }
-      // Replace with your button
-
-      const deleteCell = document.createElement("td"); // Create a cell for delete button
-      const deleteButton = document.createElement("button");
-      deleteButton.textContent = "Delete";
-      deleteButton.style.background = "red";
-      deleteButton.style.padding = "5px 20px";
-      deleteButton.style.border = "none";
-      deleteButton.style.fontWeight = "bold";
-      // Add an event listener to the "Delete" button
-      deleteButton.addEventListener("click", async () => {
-        // Remove the experience item from the user's experience array
-        console.log(item.expId);
-        const res = await fetch(
-          `http://localhost:8000/experienceDelete/${item.expId}`,
-          {
-            method: "DELETE",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token.substring(1, token.length - 1)}`,
-            },
-          }
+    if (users.message == "record not found") {
+      experienceTable;
+      console.log("no education found");
+      return;
+    } else {
+      users.forEach((item, index) => {
+        const row = document.createElement("tr");
+        const positionCell = document.createElement("td");
+        positionCell.textContent = item.position;
+        const companyCell = document.createElement("td");
+        companyCell.textContent = item.company;
+        const startDateCell = document.createElement("td");
+        startDateCell.textContent = item.startDate;
+        const endDateCell = document.createElement("td");
+        endDateCell.textContent = item.endDate;
+        const editCell = document.createElement("td");
+        const editButton = document.createElement("button");
+        editButton.textContent = "Edit";
+        editButton.style.background = "lightgreen";
+        editButton.style.padding = "5px 20px";
+        editButton.style.border = "none";
+        editButton.style.fontWeight = "bold";
+        const experienceEditForm = document.querySelector(
+          ".experienceEditForm"
         );
-        if (res.status === 200) {
-          alert(" experiences deleted  successfully");
-        } else {
-          alert("not deleted");
+        if (experienceEditForm) {
+          editButton.addEventListener("click", () => {
+            const experienceEditForm11 = createExperienceEditForm(
+              item,
+              item.ID
+            );
+
+            experienceEditForm.appendChild(experienceEditForm11);
+          });
         }
-        // Re-render the experience table with the updated data
-        createExperienceTable();
-        // (You might also want to save the changes to your database or storage here)
+        // Replace with your button
+
+        const deleteCell = document.createElement("td"); // Create a cell for delete button
+        const deleteButton = document.createElement("button");
+        deleteButton.textContent = "Delete";
+        deleteButton.style.background = "red";
+        deleteButton.style.padding = "5px 20px";
+        deleteButton.style.border = "none";
+        deleteButton.style.fontWeight = "bold";
+        // Add an event listener to the "Delete" button
+        deleteButton.addEventListener("click", async () => {
+          // Remove the experience item from the user's experience array
+          console.log(item.expId);
+          const res = await fetch(
+            `http://localhost:8000/experienceDelete/${item.ID}`,
+            {
+              method: "DELETE",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token.substring(1, token.length - 1)}`,
+              },
+            }
+          );
+          if (res.status === 200) {
+            alert(" experiences deleted  successfully");
+          } else {
+            alert("not deleted");
+          }
+          // Re-render the experience table with the updated data
+          createExperienceTable();
+          // (You might also want to save the changes to your database or storage here)
+        });
+
+        editCell.appendChild(editButton);
+        deleteCell.appendChild(deleteButton); // Add the delete button to the delete cell
+
+        // Add the cells to the row
+        row.appendChild(positionCell);
+        row.appendChild(companyCell);
+        row.appendChild(startDateCell);
+        row.appendChild(endDateCell);
+        row.appendChild(editCell);
+        row.appendChild(deleteCell); // Add the delete cell to the row
+
+        // Add the row to the table
+        experienceTable.appendChild(row);
       });
-
-      editCell.appendChild(editButton);
-      deleteCell.appendChild(deleteButton); // Add the delete button to the delete cell
-
-      // Add the cells to the row
-      row.appendChild(positionCell);
-      row.appendChild(companyCell);
-      row.appendChild(startDateCell);
-      row.appendChild(endDateCell);
-      row.appendChild(editCell);
-      row.appendChild(deleteCell); // Add the delete cell to the row
-
-      // Add the row to the table
-      experienceTable.appendChild(row);
-    });
+    }
   } catch (error) {}
 
   // Populate the table with experience data
@@ -857,7 +859,6 @@ if (editProfile) {
       const editdata121Regex = /[^a-zA-Z\s]/g;
       ValidationInputByRegex(editdata121, editdata121Regex);
 
-      const editdata21 = document.createElement("td");
       const editdata22 = document.createElement("td");
       const editdata221 = document.createElement("input");
 
@@ -1000,6 +1001,19 @@ if (editProfile) {
           endDate: editdata424.value || "present",
         };
 
+        if (
+          editdata421.value == "" ||
+          editdata422.value == "" ||
+          editdata423.value == "" ||
+          editdata424.value == ""
+        ) {
+          alert("all fields are required");
+          return;
+        }
+        if (new Date(editdata423.value) >= new Date(editdata424.value)) {
+          alert("Start date must be before end date");
+          return;
+        }
         try {
           const response = await fetch("http://localhost:8000/addEduaction", {
             method: "POST",
@@ -1167,6 +1181,20 @@ if (editProfile) {
           startDate: editdata623.value,
           endDate: editdata624.value || "present",
         };
+
+        if (
+          editdata621.value == "" ||
+          editdata622.value == "" ||
+          editdata623.value == "" ||
+          editdata624.value == ""
+        ) {
+          alert("all fields are required");
+          return;
+        }
+        if (new Date(editdata623.value) >= new Date(editdata624.value)) {
+          alert("Start date must be before end date");
+          return;
+        }
         // user1.experience.push(newExperienceItem);
 
         try {
@@ -1209,15 +1237,14 @@ if (editProfile) {
       ValidationInputByRegex(editdata521, editdata521Regex);
       editdata11.textContent = "Name:";
       editdata121.value = user1.name;
-      editdata21.textContent = "password:";
-      editdata221.value = user1.password;
+
       editdata31.textContent = "phone:";
-      editdata321.value = user1.phoneNumber;
+      editdata321.value = user1.phone;
       editdata41.textContent = "Education";
       editdata421.value = "";
 
       editdata51.textContent = "Skills:";
-      editdata521.value = user1.skills;
+      editdata521.value = user1.skill;
       editdata61.textContent = "Experince:";
 
       editdata62.appendChild(experEditFields); //2nd td
@@ -1231,8 +1258,7 @@ if (editProfile) {
       editdata12.appendChild(editdata121); //2nd td
       editrow1.appendChild(editdata11);
       editrow1.appendChild(editdata12);
-      editrow2.appendChild(editdata21);
-      editrow2.appendChild(editdata22);
+
       editrow3.appendChild(editdata31);
       editrow3.appendChild(editdata32);
       editrow4.appendChild(editdata41);
@@ -1272,26 +1298,25 @@ if (editProfile) {
         if (userindex !== -1) {
           users[userindex].name = editdata121.value;
 
-          if (editdata221.value === "") {
-            alert("Please enter Password");
-            return;
-          } else if (editdata121.value === "") {
+          if (editdata121.value === "") {
             alert("Please enter Name");
             return;
-          } else {
-            users[userindex].password = editdata221.value;
           }
 
           users[userindex].phoneNumber = editdata321.value;
           users[userindex].skills = editdata521.value.split(",");
         }
 
+        if (editdata321.value == "" || editdata521.value == "") {
+          alert("all fields are required");
+          return;
+        }
         try {
           const updatedProfile = users[userindex];
           console.log(updatedProfile);
 
           const res = await fetch(
-            `http://localhost:8000/profileUpdate/${loginUser.email}`,
+            `http://localhost:8000/profileUpdate/${updatedProfile.ID}`,
             {
               method: "PUT",
               headers: {
@@ -1322,8 +1347,21 @@ if (editProfile) {
 }
 
 const logoutbtn = document.getElementById("logout");
-
-// Logout button for admin and user
+async function logout(e) {
+  e.preventDefault();
+  const res = await fetch("http://localhost:8000/logout", {
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token.substring(1, token.length - 1)}`,
+    },
+  });
+  localStorage.removeItem("user");
+  localStorage.removeItem("admin");
+  localStorage.removeItem("token");
+  console.log(res);
+  const url = "http://127.0.0.1:5500/Client/HTML/login.html";
+  window.location.href = url;
+}
 if (logoutbtn) {
   logoutbtn.onclick = logout;
 }

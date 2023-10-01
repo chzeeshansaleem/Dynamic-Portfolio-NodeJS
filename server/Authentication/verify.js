@@ -1,5 +1,7 @@
 import jwt from "jsonwebtoken";
 const secretKey = process.env.SECRET_KEY;
+var tokenData = null;
+
 const verifyToken1 = (token) => {
   try {
     // verify the token
@@ -11,5 +13,10 @@ const verifyToken1 = (token) => {
     return null; // return null
   }
 };
-
+export function setToken(newToken) {
+  tokenData = newToken;
+}
+export function getToken() {
+  return tokenData;
+}
 export { verifyToken1 };

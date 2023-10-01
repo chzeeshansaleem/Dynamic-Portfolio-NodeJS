@@ -43,6 +43,10 @@ async function handleLogin(e) {
     password,
   };
 
+  if (email === "" && password === "") {
+    alert("all fields are required");
+    return;
+  }
   try {
     const res = await fetch("http://localhost:8000/login", {
       method: "POST",
@@ -58,12 +62,12 @@ async function handleLogin(e) {
       alert("User Login successfully");
 
       localStorage.setItem("user", JSON.stringify(result.user));
-      setLocalStorageWithExpiry("token", result.token, 5);
+      setLocalStorageWithExpiry("token", result.token, 30);
       const url = "http://127.0.0.1:5500/Client/HTML/index.html";
       window.location.href = url;
     } else if (res.status === 222) {
       alert("Admin Login successfully");
-      setLocalStorageWithExpiry("Admintoken", result.Admintoken, 5);
+      setLocalStorageWithExpiry("Admintoken", result.Admintoken, 30);
       localStorage.setItem("admin", JSON.stringify(result.user));
 
       const url = "http://127.0.0.1:5500/Client/HTML/adminUsers.html";

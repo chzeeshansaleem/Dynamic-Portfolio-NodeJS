@@ -1,31 +1,17 @@
 import http from "http";
 import "dotenv/config";
 import url from "url";
-import {
-  handleSignup,
-  handleLogin,
-  showUserProfile,
-  addUser,
-  updateUserRole,
-  deleteUserByAdmin,
-  showProjects,
-  updateProfileByUser,
-  showUserForProfile,
-  addEduactionOfUser,
-  showEducation,
-  deleteEducation,
-  updateEducation,
-  showExperience,
-  addExperience,
-  updateExperience,
-  deleteExperiences,
-  addProject,
-  deleteProject,
-  updateProject,
-  logout,
-  tokenshow,
-} from "./controllers/controllers.js";
+import { routes } from "./routes/routes.js";
+import { setToken, getToken, verifyToken1 } from "./Authentication/verify.js";
+//import tokenData from "./db/tokenSession.json" assert { type: "json" };
 const port = process.env.PORT || 8000;
+export var data;
+import {
+  createDatabase,
+  connectionWithDB,
+  connectionString as con,
+} from "./config/config.js";
+import sql from "msnodesqlv8";
 const server = http.createServer((req, res) => {
   const parsedUrl = url.parse(req.url, true);
   const pathname = parsedUrl.pathname;
@@ -46,77 +32,167 @@ const server = http.createServer((req, res) => {
     res.end();
     return;
   }
-  if (req.url === "/" && req.method === "GET") {
-    showUserProfile(req, res);
-  } else if (req.url === "/signup" && req.method === "POST") {
-    handleSignup(req, res);
-  } else if (req.url === "/login" && req.method === "POST") {
-    handleLogin(req, res);
-  } else if (req.url === "/adminUsers" && req.method === "GET") {
-    showUserProfile(req, res);
-  } else if (pathname.startsWith("/deleteUsers/") && req.method === "DELETE") {
-    const profileIdToDelete = pathname.split("/")[2];
-    deleteUserByAdmin(req, res, profileIdToDelete);
-  } else if (pathname.startsWith("/adminUsers/") && req.method === "PUT") {
-    const profileIdToUpdate = pathname.split("/")[2];
-    updateUserRole(req, res, profileIdToUpdate);
-  } else if (req.url === "/add_users" && req.method === "POST") {
-    addUser(req, res);
-  } else if (pathname.startsWith("/profileUpdate/") && req.method === "PUT") {
-    const profileIdToUpdate = pathname.split("/")[2];
-    updateProfileByUser(req, res, profileIdToUpdate);
-  } else if (req.url === "/profileUpdate" && req.method === "GET") {
-    showUserForProfile(req, res);
-  } else if (req.url === "/addEduaction" && req.method === "POST") {
-    addEduactionOfUser(req, res);
-  } else if (req.url === "/projects" && req.method === "GET") {
-    showProjects(req, res);
-  } else if (req.url === "/education" && req.method === "GET") {
-    showEducation(req, res);
-  } else if (req.url === "/userAddProjects" && req.method === "POST") {
-    addProject(req, res);
-  } else if (pathname.startsWith("/projects/") && req.method === "DELETE") {
-    const projectIdToDelete = pathname.split("/")[2];
-    deleteProject(req, res, projectIdToDelete);
-  } else if (pathname.startsWith("/projectUpdate/") && req.method === "PUT") {
-    const projectIdToUpdate = pathname.split("/")[2];
-    updateProject(req, res, projectIdToUpdate);
-  } else if (pathname.startsWith("/educationUpdate/") && req.method === "PUT") {
-    const projectIdToUpdate = pathname.split("/")[2];
-    updateEducation(req, res, projectIdToUpdate);
-  } else if (
-    pathname.startsWith("/educationDelete/") &&
-    req.method === "DELETE"
-  ) {
-    const DeleteIdToUpdate = pathname.split("/")[2];
+  console.log("pathname: ", pathname);
 
-    deleteEducation(req, res, DeleteIdToUpdate);
-  } else if (req.url === "/addExperience" && req.method === "POST") {
-    addExperience(req, res);
-  } else if (
-    pathname.startsWith("/experienceUpdate/") &&
-    req.method === "PUT"
-  ) {
-    const expIdToUpdate = pathname.split("/")[2];
-    updateExperience(req, res, expIdToUpdate);
-  } else if (
-    pathname.startsWith("/experienceDelete/") &&
-    req.method === "DELETE"
-  ) {
-    const DeleteIdToUpdate = pathname.split("/")[2];
-    deleteExperiences(req, res, DeleteIdToUpdate);
-  } else if (req.url === "/experience" && req.method === "GET") {
-    showExperience(req, res);
-  } else if (req.url === "/logout") {
-    logout(req, res);
-  } else if (req.url === "/token") {
-    tokenshow(req, res);
+  if (pathname === "/login" || pathname === "/signup") {
+    // If it's a login or signup route, no token verification is required
+    const id2 = pathname.split("/");
+    //  console.log(id2.length);
+    //console.log("total paths: " + id2);
+
+    // route for get and post
+    const route = routes.find(
+      (r) => r.path === `/${id2[1]}` && r.method === req.method
+    );
+
+    // route1 for update and delete
+    const route1 = routes.find(
+      (r) => r.path === `/${id2[1]}/` && r.method === req.method
+    );
+
+    if (route) {
+      route.handler(req, res);
+    } else if (route1) {
+      route1.handler(req, res, id2[2]);
+    } else {
+      console.log("page not found from routes");
+      res.writeHead(404, { "Content-Type": "text/plain" });
+      res.end("Not Found");
+    }
   } else {
-    res.writeHead(404, { "Content-Type": "text/plain" });
-    res.end("Not Found");
+    const token1 = req.headers["authorization"];
+    const token = token1.split(" ")[1];
+    console.log("token from index: " + token);
+    const tokenVerified = verifyToken1(token);
+
+    // token insert in tokensessions table
+    const tokengetQuery = `select * from tokensession`;
+
+    sql.query(con, tokengetQuery, (err, result) => {
+      if (err) {
+        console.log("Database Token error: ", err);
+        // Handle the error
+        res.end(JSON.stringify({ MESSAGE: "Token not save  ", err }));
+      }
+
+      console.log("Token get successfully");
+      if (tokenVerified != null) {
+        const tokenExist = result.findIndex((user) => {
+          user.username === tokenVerified.email && user.token === token;
+        });
+        console.log(tokenExist);
+        // if user exist in token table
+        if (tokenExist !== -1) {
+          const id2 = pathname.split("/");
+          // console.log(id2.length);
+          //console.log("total paths: " + id2);
+
+          // route for get and post
+          const route = routes.find(
+            (r) => r.path === `/${id2[1]}` && r.method === req.method
+          );
+
+          // route1 for update and delete
+          const route1 = routes.find(
+            (r) => r.path === `/${id2[1]}/` && r.method === req.method
+          );
+
+          if (route) {
+            route.handler(req, res);
+          } else if (route1) {
+            route1.handler(req, res, id2[2]);
+          } else {
+            console.log("page not found from routes");
+            res.writeHead(404, { "Content-Type": "text/plain" });
+            res.end("Not Found");
+          }
+        }
+        // else {
+        //   // table ma nai ha per token ka time ha
+        //   console.log("User logged out");
+        //   console.error("from  show user profile Token verification failed");
+
+        //   res.writeHead(403, { "Content-Type": "application/json" });
+        //   res.end(
+        //     JSON.stringify({
+        //       message: " User Not Authorized",
+        //     })
+        //   );
+        // }
+      } else {
+        const tokenExistIndex = result.findIndex(
+          (user) => user.token === token
+        );
+
+        console.log("results", tokenExistIndex);
+        // delete token from table
+        const deletetokenQuery = `DELETE FROM tokensession WHERE token = '${token}'`;
+        sql.query(con, deletetokenQuery, (err, results) => {
+          if (err) {
+            console.log("error from token delete", err);
+          }
+          console.log("token deleted", results);
+        });
+        console.log("User logged out");
+        console.error("from  show user profile Token verification failed");
+
+        res.writeHead(403, { "Content-Type": "application/json" });
+        res.end(
+          JSON.stringify({
+            message: " User Not Authorized",
+          })
+        );
+        return;
+      }
+
+      if (!tokenVerified) {
+        console.log("Token verification failed");
+        res.writeHead(401, { "Content-Type": "text/plain" });
+        res.end("Unauthorized");
+        return;
+      } else {
+        setToken(tokenVerified);
+        console.log("tokenVerified : " + tokenVerified);
+        data = getToken();
+        console.log("getToken func : ", data);
+        const id2 = pathname.split("/");
+        // console.log(id2.length);
+        //console.log("total paths: " + id2);
+
+        // route for get and post
+        const route = routes.find(
+          (r) =>
+            r.path === `/${id2[1]}` &&
+            r.method === req.method &&
+            r.role === data.role
+        );
+
+        // route1 for update and delete
+        const route1 = routes.find(
+          (r) =>
+            r.path === `/${id2[1]}/` &&
+            r.method === req.method &&
+            r.role === data.role
+        );
+
+        if (route) {
+          route.handler(req, res);
+        } else if (route1) {
+          route1.handler(req, res, id2[2]);
+        } else {
+          console.log("page not found from routes");
+          res.writeHead(404, { "Content-Type": "text/plain" });
+          res.end("Not Found or Unauthorized");
+        }
+        // res.writeHead(200, "Content-Type : application/json");
+        // res.end(JSON.stringify("userToken ath"));
+        // console.log("tokenVerified from index ", tokenVerified);
+      }
+    });
   }
 });
-
+//createDatabase();
+connectionWithDB();
 server.listen(port, "127.0.0.1", () => {
   console.log("Server Running on: " + port);
 });

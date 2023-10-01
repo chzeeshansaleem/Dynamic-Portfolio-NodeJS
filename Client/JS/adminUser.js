@@ -1,5 +1,3 @@
-//import jsonfile from "../db/user.json" assert { type: "json" };
-//console.log(jsonfile);
 export function getLocalStorageWithExpiry(key) {
   const item = localStorage.getItem(key);
   if (!item) return null;
@@ -15,9 +13,6 @@ export function getLocalStorageWithExpiry(key) {
 
   return parsedItem.value;
 }
-import userProjectData from "../db/projects.json" assert { type: "json" };
-console.log(userProjectData);
-import logoutAdmin from "../JS/AdminViewProjects.js";
 const redirct = localStorage.getItem("admin");
 const Admintoken1 = getLocalStorageWithExpiry("Admintoken");
 console.log(Admintoken1);
@@ -27,28 +22,6 @@ if (!Admintoken1) {
   const url = "http://127.0.0.1:5500/Client/HTML/login.html";
   window.location.href = url;
 }
-
-// function maskText(text, allowedRegex) {
-//   // Escape any special characters in the allowedRegex
-//   const escapedRegex = new RegExp(
-//     allowedRegex.source.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"),
-//     "g"
-//   );
-
-//   // Use the escapedRegex to replace disallowed characters with an empty string
-//   const maskedText = text.replace(
-//     new RegExp(`[^${escapedRegex.source}]`, "g"),
-//     ""
-//   );
-
-//   return maskedText;
-// }
-
-// const inputText = "abc123!@#45/*.6";
-// const allowedRegex = /[a-zA-Z0-9@,.]/;
-// const result = maskText(inputText, allowedRegex);
-// console.log(result); // Output: "abc123456"
-
 // validation func
 function ValidationInputByRegex(inputElement, regex) {
   inputElement.addEventListener("input", function (event) {
@@ -111,10 +84,10 @@ async function usershow() {
     adminTableHeader.appendChild(adminTableHeadActions);
     adminTable.appendChild(adminTableHeader);
 
-    const currentAdminEmail = JSON.parse(localStorage.getItem("admin"));
-
     try {
-      const res = await fetch("http://localhost:8000/adminUsers", {
+      const filter = document.getElementById("searchInput").value.trim();
+      console.log(filter);
+      const res = await fetch(`http://localhost:8000/?searchQuery=${filter}`, {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${Admintoken.substring(
@@ -125,108 +98,112 @@ async function usershow() {
       });
       const jsonfile = await res.json();
       console.log(jsonfile);
+      const allUsers = document.querySelector(".allUsers");
 
-      jsonfile.forEach((user) => {
-        if (
-          user.role === "user" ||
-          (user.role === "admin" && user.email !== currentAdminEmail.email)
-        ) {
-          const adminTableRow = document.createElement("tr");
-          const adminTableRowTdName = document.createElement("td");
-          adminTableRowTdName.textContent = user.name;
-          const adminTableRowTdEmail = document.createElement("td");
-          const adminTableRowTdRole = document.createElement("td");
-          adminTableRowTdRole.textContent = user.role;
-          adminTableRowTdEmail.textContent = user.email;
-          const adminTableRowTdAction = document.createElement("td");
-          const adminTableRowTdAction2 = document.createElement("td");
-          const adminEdit = document.createElement("button");
-          adminEdit.textContent = "Edit Role";
-          adminTableRowTdAction2.appendChild(adminEdit);
-          const adminAction = document.createElement("button");
-          adminAction.textContent = "Delete";
-          adminAction.style.background = "red";
+      allUsers.textContent = jsonfile.totalUsers;
+      const userCount = document.querySelector(".userCount");
 
-          adminTableRowTdAction.appendChild(adminAction);
-          adminTableRow.appendChild(adminTableRowTdName);
-          adminTableRow.appendChild(adminTableRowTdEmail);
-          adminTableRow.appendChild(adminTableRowTdRole);
+      userCount.textContent = jsonfile.userCount;
+      const adminCount = document.querySelector(".adminCount");
 
-          adminTableRow.appendChild(adminTableRowTdAction2);
+      adminCount.textContent = jsonfile.adminCount;
 
-          adminTableRow.appendChild(adminTableRowTdAction);
+      jsonfile.userData.forEach((user) => {
+        const adminTableRow = document.createElement("tr");
+        const adminTableRowTdName = document.createElement("td");
+        adminTableRowTdName.textContent = user.name;
+        const adminTableRowTdEmail = document.createElement("td");
+        const adminTableRowTdRole = document.createElement("td");
+        adminTableRowTdRole.textContent = user.role;
+        adminTableRowTdEmail.textContent = user.email;
+        const adminTableRowTdAction = document.createElement("td");
+        const adminTableRowTdAction2 = document.createElement("td");
+        const adminEdit = document.createElement("button");
+        adminEdit.textContent = "Edit Role";
+        adminTableRowTdAction2.appendChild(adminEdit);
+        const adminAction = document.createElement("button");
+        adminAction.textContent = "Delete";
+        adminAction.style.background = "red";
 
-          adminTable.appendChild(adminTableRow);
-          // Edit Button
-          adminEdit.onclick = function () {
-            AdminEditUserRole.style.display = "block";
-            AdminEditUserRole.innerHTML = "";
-            const addform = document.createElement("form");
-            //   addform.innerHTML = "";
-            const addTable = document.createElement("table");
-            const addrow3 = document.createElement("tr");
-            const addrow5 = document.createElement("tr");
-            const adddata31 = document.createElement("td");
-            const adddata51 = document.createElement("td");
-            const adddata52 = document.createElement("td");
-            const cancelAddUser = document.createElement("button");
-            cancelAddUser.textContent = "Cancel";
-            const saveEditbtn = document.createElement("button");
-            saveEditbtn.textContent = "Save";
-            adddata31.textContent = "Role";
-            const adddata32 = document.createElement("td");
-            const userRadio = document.createElement("select");
-            const userCurrentRole = document.createElement("option");
-            userCurrentRole.textContent = user.role;
-            userCurrentRole.value = user.role;
-            userCurrentRole.selected = true;
-            const userSelect = document.createElement("option");
-            userSelect.textContent = "user";
-            userSelect.value = "user";
-            const adminSelect = document.createElement("option");
-            adminSelect.textContent = "admin";
-            adminSelect.value = "admin";
-            userRadio.onclick = () => {
-              userCurrentRole.style.display = "none";
-            };
+        adminTableRowTdAction.appendChild(adminAction);
+        adminTableRow.appendChild(adminTableRowTdName);
+        adminTableRow.appendChild(adminTableRowTdEmail);
+        adminTableRow.appendChild(adminTableRowTdRole);
 
-            console.log(userRadio.value);
-            adddata52.appendChild(saveEditbtn);
-            adddata51.appendChild(cancelAddUser);
-            userRadio.appendChild(userCurrentRole);
-            userRadio.appendChild(userSelect);
-            userRadio.appendChild(adminSelect);
-            adddata32.appendChild(userRadio);
-            addrow3.appendChild(adddata31);
-            addrow3.appendChild(adddata32);
-            addrow5.appendChild(adddata51);
-            addrow5.appendChild(adddata52);
-            addTable.appendChild(addrow3);
-            addTable.appendChild(addrow5);
-            addform.appendChild(addTable);
-            AdminEditUserRole.appendChild(addform);
-            //admin modal cancel ka btn
-            cancelAddUser.onclick = function (e) {
-              e.preventDefault();
-              AdminEditUserRole.style.display = "none";
-            };
-            // edit data ko save ka btn
-            saveEditbtn.onclick = function (e) {
-              e.preventDefault();
-              const selectedRole = {
-                role: userRadio.value,
-              };
+        adminTableRow.appendChild(adminTableRowTdAction2);
 
-              editRole(user.email, selectedRole);
-              AdminEditUserRole.style.display = "none";
-            };
+        adminTableRow.appendChild(adminTableRowTdAction);
+
+        adminTable.appendChild(adminTableRow);
+        // Edit Button
+        adminEdit.onclick = function () {
+          AdminEditUserRole.style.display = "block";
+          AdminEditUserRole.innerHTML = "";
+          const addform = document.createElement("form");
+          //   addform.innerHTML = "";
+          const addTable = document.createElement("table");
+          const addrow3 = document.createElement("tr");
+          const addrow5 = document.createElement("tr");
+          const adddata31 = document.createElement("td");
+          const adddata51 = document.createElement("td");
+          const adddata52 = document.createElement("td");
+          const cancelAddUser = document.createElement("button");
+          cancelAddUser.textContent = "Cancel";
+          const saveEditbtn = document.createElement("button");
+          saveEditbtn.textContent = "Save";
+          adddata31.textContent = "Role";
+          const adddata32 = document.createElement("td");
+          const userRadio = document.createElement("select");
+          const userCurrentRole = document.createElement("option");
+          userCurrentRole.textContent = user.role;
+          userCurrentRole.value = user.role;
+          userCurrentRole.selected = true;
+          const userSelect = document.createElement("option");
+          userSelect.textContent = "user";
+          userSelect.value = "user";
+          const adminSelect = document.createElement("option");
+          adminSelect.textContent = "admin";
+          adminSelect.value = "admin";
+          userRadio.onclick = () => {
+            userCurrentRole.style.display = "none";
           };
-          // delete user ya admin button
-          adminAction.onclick = function (e) {
+
+          console.log(userRadio.value);
+          adddata52.appendChild(saveEditbtn);
+          adddata51.appendChild(cancelAddUser);
+          userRadio.appendChild(userCurrentRole);
+          userRadio.appendChild(userSelect);
+          userRadio.appendChild(adminSelect);
+          adddata32.appendChild(userRadio);
+          addrow3.appendChild(adddata31);
+          addrow3.appendChild(adddata32);
+          addrow5.appendChild(adddata51);
+          addrow5.appendChild(adddata52);
+          addTable.appendChild(addrow3);
+          addTable.appendChild(addrow5);
+          addform.appendChild(addTable);
+          AdminEditUserRole.appendChild(addform);
+          //admin modal cancel ka btn
+          cancelAddUser.onclick = function (e) {
             e.preventDefault();
-            deleteUserProject(user.email);
+            AdminEditUserRole.style.display = "none";
           };
-        }
+          // edit data ko save ka btn
+          saveEditbtn.onclick = function (e) {
+            e.preventDefault();
+            const selectedRole = {
+              role: userRadio.value,
+            };
+            console.log("selectedRole : " + selectedRole.role);
+            editRole(user.ID, selectedRole);
+            AdminEditUserRole.style.display = "none";
+          };
+        };
+        // delete user ya admin button
+        adminAction.onclick = function (e) {
+          e.preventDefault();
+          deleteUserProject(user.email);
+        };
       });
     } catch (error) {}
     adminuser.appendChild(adminTable);
@@ -255,6 +232,11 @@ AdminAddUserBtn.onclick = function () {
   const adddata12 = document.createElement("td");
   const adddata121 = document.createElement("input");
   adddata121.type = "email";
+  adddata121.setAttribute(
+    "pattern",
+    "[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,4}"
+  );
+
   // adddata121.setAttribute("type", "email");
   const adddata121Regex = /[^a-zA-Z0-9\s,._@-]/g;
   ValidationInputByRegex(adddata121, adddata121Regex);
@@ -354,7 +336,8 @@ AdminAddUserBtn.onclick = function () {
       if (
         adddata121.value.trim() == "" ||
         adddata221.value.trim() == "" ||
-        selectedRole.trim() == "choose"
+        selectedRole.trim() == "choose" ||
+        adddata421.value == ""
       ) {
         alert("name,email,password and role  is required");
         return;
@@ -376,6 +359,8 @@ AdminAddUserBtn.onclick = function () {
         return;
       } else if (res.ok) {
         alert("user added successfully");
+      } else if (res.status === 493) {
+        alert("must be a valid email");
       } else if (res.status === 403) {
         alert("You are not authorized to add user");
       } else {
@@ -425,45 +410,59 @@ const searchInput = document.getElementById("searchInput");
 const searchInputRegex = /[^a-zA-Z0-9\s,.@_-]/g;
 ValidationInputByRegex(searchInput, searchInputRegex);
 if (searchInput) {
-  searchInput.addEventListener("input", SearchSuggestion);
+  searchInput.addEventListener("input", usershow);
 }
-async function SearchSuggestion() {
-  try {
-    const res = await fetch("http://localhost:8000", {
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${Admintoken.substring(
-          1,
-          Admintoken.length - 1
-        )}`,
-      },
-    });
-    const jsonfile = await res.json();
-    console.log(jsonfile);
-    const filter = document.getElementById("searchInput").value.toLowerCase();
-    let myTable = document.getElementById("myTable");
-    let tr = myTable.getElementsByTagName("tr");
+// async function SearchSuggestion() {
+//   try {
+//     const res = await fetch("http://localhost:8000", {
+//       headers: {
+//         "Content-Type": "application/json",
+//         Authorization: `Bearer ${Admintoken.substring(
+//           1,
+//           Admintoken.length - 1
+//         )}`,
+//       },
+//     });
+//     const jsonfile = await res.json();
+//     console.log(jsonfile);
+//     const filter = document.getElementById("searchInput").value.toLowerCase();
+//     let myTable = document.getElementById("myTable");
+//     let tr = myTable.getElementsByTagName("tr");
 
-    for (let i = 1; i < tr.length; i++) {
-      let email = jsonfile[i].email.toLowerCase();
-      let name = jsonfile[i].name.toLowerCase();
-      let phoneNumber = jsonfile[i].phoneNumber.toLowerCase();
+//     for (let i = 1; i < tr.length; i++) {
+//       let email = jsonfile[i - 1]?.email?.toLowerCase();
+//       let name = jsonfile[i - 1]?.name?.toLowerCase();
+//       let phoneNumber = jsonfile[i - 1]?.phone;
 
-      if (
-        email.includes(filter) ||
-        name.includes(filter) ||
-        phoneNumber.includes(filter)
-      ) {
-        tr[i].style.display = "";
-      } else {
-        tr[i].style.display = "none";
-      }
-    }
-  } catch (error) {}
-}
+//       if (
+//         email?.includes(filter) ||
+//         name?.includes(filter) ||
+//         phoneNumber?.includes(filter)
+//       ) {
+//         tr[i].style.display = "";
+//       } else {
+//         tr[i].style.display = "none";
+//       }
+//     }
+//   } catch (error) {
+//     console.error("Error:", error);
+//   }
+// }
 
 const logoutbtn = document.getElementById("logout");
-
+async function logoutAdmin() {
+  localStorage.removeItem("admin");
+  localStorage.removeItem("Admintoken");
+  const res = await fetch("http://localhost:8000/logout", {
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${Admintoken.substring(1, Admintoken.length - 1)}`,
+    },
+  });
+  console.log(res);
+  const url = "http://127.0.0.1:5500/Client/HTML/login.html";
+  window.location.href = url;
+}
 // Logout button for admin and user
 if (logoutbtn) {
   logoutbtn.onclick = logoutAdmin;

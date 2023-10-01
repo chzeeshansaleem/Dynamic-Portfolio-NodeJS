@@ -19,6 +19,45 @@
         border-collapse: 1;
         margin-top: 10px;
       }
+      /* Container for the cards */
+      .card-container {
+        display: grid;
+        grid-template-columns: repeat(
+          auto-fit,
+          minmax(200px, 1fr)
+        ); /* Responsive grid */
+        gap: 20px; /* Gap between cards */
+        justify-items: center; /* Center content horizontally */
+        align-items: center; /* Center content vertically */
+        max-width: 800px; /* Optional: Set a maximum width */
+        margin: 10px auto; /* Optional: Center the container horizontally */
+      }
+
+      /* Style for each card */
+      .card {
+        /* border: 1px solid #ccc; */
+        padding: 20px;
+
+        text-align: center;
+        box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1); /* Optional: Add a shadow */
+        background-color: aquamarine; /* Optional: Add background color */
+      }
+
+      /* Style for the individual elements within the card */
+      .totalLoginUsers,
+      .totalUsers,
+      .totalAdmins {
+        font-size: 18px;
+        font-weight: bold;
+        margin-bottom: 10px;
+      }
+
+      /* Media query for smaller screens (phones) */
+      @media (max-width: 768px) {
+        .card-container {
+          grid-template-columns: 1fr; /* Display one card per row on smaller screens */
+        }
+      }
     </style>
   </head>
   <body>
@@ -39,13 +78,34 @@
       </nav>
     </header>
 
-    <main style="margin-top: 20vh; text-align: center">
+    <main style="margin-top: 20vh; text-align: justify">
+      <div class="card-container">
+        <!-- First Card: Total Login Users -->
+        <div class="card">
+          <div class="totalLoginUsers">Total Login Users</div>
+          <div class="allUsers">452</div>
+        </div>
+
+        <!-- Second Card: Total Users -->
+        <div class="card">
+          <div class="totalUsers">Total Users</div>
+          <div class="userCount">452</div>
+        </div>
+
+        <!-- Third Card: Total Admins -->
+        <div class="card">
+          <div class="totalAdmins">Total Admins</div>
+          <div class="adminCount">452</div>
+        </div>
+      </div>
       <button
         style="
           background-color: rgb(131, 131, 151);
 
           border: none;
           padding: 5px;
+          text-align: center;
+          margin-left: 46.3%;
         "
         class="AdminAddUserBtn"
       >

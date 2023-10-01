@@ -1,4 +1,19 @@
-import { logout, getLocalStorageWithExpiry } from "../JS/index.js";
+//import { logout, getLocalStorageWithExpiry } from "../JS/index.js";
+function getLocalStorageWithExpiry(key) {
+  const item = localStorage.getItem(key);
+  if (!item) return null;
+
+  const parsedItem = JSON.parse(item);
+  const now = new Date();
+
+  if (now.getTime() > parsedItem.expiry) {
+    // Item has expired, so remove it from localStorage
+    localStorage.removeItem(key);
+    return null;
+  }
+
+  return parsedItem.value;
+}
 const token1 = getLocalStorageWithExpiry("token");
 console.log(token1);
 const token = `"${token1}"`;
@@ -59,8 +74,6 @@ ValidationInputByRegex(searchInput, searchInputRegex);
 async function userpro() {
   const userProjectsContainer = document.querySelector(".usersprojects");
   userProjectsContainer.innerHTML = "";
-  const userModal = document.querySelector(".modalmodal");
-  const userModalDetails = document.querySelector(".usermodalDetails");
   const filter = searchInput.value.trim().toUpperCase();
   await fetch("http://localhost:8000/projects", {
     headers: {
@@ -70,304 +83,261 @@ async function userpro() {
   })
     .then((res) => res.json())
     .then((userProjectData) => {
-      console.log(userProjectData);
-
-      console.log(searchInput.value);
-      //console.log("filter: " + filter);
-      userProjectData.forEach((project) => {
-        let languagesMatch = false;
-        let technologiesMatch = false;
-        let tagsMatch = false;
-        for (let k = 0; k < project.languages.length; k++) {
-          const language = project.languages[k].toUpperCase();
-          if (language.includes(filter)) {
-            languagesMatch = true;
-            break;
-          }
-        }
-        for (let k = 0; k < project.technology.length; k++) {
-          const technology = project.technology[k].toUpperCase();
-          if (technology.includes(filter)) {
-            technologiesMatch = true;
-            break;
-          }
+      userProjectData.insertResult.forEach((project) => {
+        const userProjectRow = document.createElement("div");
+        userProjectRow.classList.add("userProjectRow");
+        const userProjectDetails = document.createElement("div");
+        userProjectDetails.classList.add("userProjectDetails");
+        const userProjectTitle = document.createElement("h3");
+        userProjectTitle.textContent = project.title;
+        const userProjectDescription = document.createElement("p");
+        userProjectDescription.classList.add("userDetails");
+        if (project.description.length > 100) {
+          userProjectDescription.textContent =
+            project.description.slice(0, 150) + "...";
+        } else {
+          userProjectDescription.textContent = project.description;
         }
 
-        for (let k = 0; k < project.tags.length; k++) {
-          const technology = project.tags[k].toUpperCase();
-          if (technology.includes(filter)) {
-            tagsMatch = true;
-            break;
-          }
-        }
-        const matchesSearchCriteria =
-          (!filter ||
-            project.title.toUpperCase().includes(filter) ||
-            project.description.toUpperCase().includes(filter) ||
-            languagesMatch ||
-            tagsMatch ||
-            technologiesMatch) &&
-          user1.email === project.username;
+        const userProjectBtn = document.createElement("div");
+        userProjectBtn.classList.add("userProjectBtn");
+        const UserEditProject = document.createElement("button");
+        UserEditProject.classList.add("userliveBtn");
+        UserEditProject.textContent = "Edit Project";
+        const userProjectImg = document.createElement("div");
+        userProjectImg.classList.add("userProjectImg");
 
-        if (matchesSearchCriteria) {
-          const userProjectRow = document.createElement("div");
-          userProjectRow.classList.add("userProjectRow");
-          const userProjectDetails = document.createElement("div");
-          userProjectDetails.classList.add("userProjectDetails");
-          const userProjectTitle = document.createElement("h3");
-          userProjectTitle.textContent = project.title;
-          const userProjectDescription = document.createElement("p");
-          userProjectDescription.classList.add("userDetails");
-          if (project.description.length > 100) {
-            userProjectDescription.textContent =
-              project.description.slice(0, 150) + "...";
-          } else {
-            userProjectDescription.textContent = project.description;
-          }
+        const imageFormat = "jpg" || "png" || "jpeg";
+        userProjectImg.style.backgroundImage = `url(data:image/${imageFormat};base64,${project.img})`;
 
-          const userProjectBtn = document.createElement("div");
-          userProjectBtn.classList.add("userProjectBtn");
-          const UserEditProject = document.createElement("button");
-          UserEditProject.classList.add("userliveBtn");
-          UserEditProject.textContent = "Edit Project";
-          const userProjectImg = document.createElement("div");
-          userProjectImg.classList.add("userProjectImg");
+        // Only open modal when "Edit Project" is clicked
+        const editProjectModal = document.querySelector(".editProjectModal");
+        UserEditProject.onclick = function () {
+          editProjectModal.style.display = "block";
+          editProjectModal.innerHTML = "";
+          const editform = document.createElement("form");
+          const editTable = document.createElement("table");
+          editTable.style.width = "90%";
+          const editrow1 = document.createElement("tr");
+          const editrow2 = document.createElement("tr");
+          const editrow3 = document.createElement("tr");
+          const editrow4 = document.createElement("tr");
+          const editrow5 = document.createElement("tr");
+          const editrow6 = document.createElement("tr");
+          const editrow7 = document.createElement("tr");
 
-          const imageFormat = "jpg" || "png" || "jpeg";
-          userProjectImg.style.backgroundImage = `url(data:image/${imageFormat};base64,${project.img})`;
+          const editdata11 = document.createElement("td");
+          const editdata12 = document.createElement("td");
+          const editdata121 = document.createElement("input");
+          const editdata121Regex = /[^a-zA-Z0-9\s_#-]/g;
+          ValidationInputByRegex(editdata121, editdata121Regex);
+          const editdata21 = document.createElement("td");
+          const editdata22 = document.createElement("td");
+          const editdata221 = document.createElement("textarea");
+          const editdata221Regex = /[^a-zA-Z0-9\s.,_#-]/g;
+          ValidationInputByRegex(editdata221, editdata221Regex);
+          const editdata31 = document.createElement("td");
+          const editdata32 = document.createElement("td");
+          const editdata321 = document.createElement("input");
+          // const fileNameInput = document.createElement("input");
+          editdata321.type = "file";
+          const type = "png" || "jpg" || "jpeg";
+          // fileNameInput.value = `${project.img}`;
+          // fileNameInput.id = "file-name";
+          // fileNameInput.readOnly = "true";
+          // editdata321.type = "file";
 
-          // Only open modal when "Edit Project" is clicked
-          const editProjectModal = document.querySelector(".editProjectModal");
-          UserEditProject.onclick = function () {
-            editProjectModal.style.display = "block";
-            editProjectModal.innerHTML = "";
-            const editform = document.createElement("form");
-            const editTable = document.createElement("table");
-            editTable.style.width = "90%";
-            const editrow1 = document.createElement("tr");
-            const editrow2 = document.createElement("tr");
-            const editrow3 = document.createElement("tr");
-            const editrow4 = document.createElement("tr");
-            const editrow5 = document.createElement("tr");
-            const editrow6 = document.createElement("tr");
-            const editrow7 = document.createElement("tr");
+          editdata321.addEventListener("change", (event) => {
+            const selectedFiles = event.target.files;
 
-            const editdata11 = document.createElement("td");
-            const editdata12 = document.createElement("td");
-            const editdata121 = document.createElement("input");
-            const editdata121Regex = /[^a-zA-Z0-9\s_#-]/g;
-            ValidationInputByRegex(editdata121, editdata121Regex);
-            const editdata21 = document.createElement("td");
-            const editdata22 = document.createElement("td");
-            const editdata221 = document.createElement("textarea");
-            const editdata221Regex = /[^a-zA-Z0-9\s.,_#-]/g;
-            ValidationInputByRegex(editdata221, editdata221Regex);
-            const editdata31 = document.createElement("td");
-            const editdata32 = document.createElement("td");
-            const editdata321 = document.createElement("input");
-            // const fileNameInput = document.createElement("input");
-            editdata321.type = "file";
-            const type = "png" || "jpg" || "jpeg";
-            // fileNameInput.value = `${project.img}`;
-            // fileNameInput.id = "file-name";
-            // fileNameInput.readOnly = "true";
-            // editdata321.type = "file";
+            for (let i = 0; i < selectedFiles.length; i++) {
+              const file = selectedFiles[i];
 
-            editdata321.addEventListener("change", (event) => {
-              const selectedFiles = event.target.files;
-
-              for (let i = 0; i < selectedFiles.length; i++) {
-                const file = selectedFiles[i];
-
-                if (file) {
-                  reader = new FileReader();
-
-                  reader.onload = (fileEvent) => {
-                    base64String = btoa(fileEvent.target.result);
-                    console.log(base64String);
-                  };
-
-                  reader.readAsBinaryString(file);
-                }
-              }
-            });
-            const editdata41 = document.createElement("td");
-            const editdata42 = document.createElement("td");
-            const editdata421 = document.createElement("textarea");
-            const editdata421Regex = /[^a-zA-Z0-9\s,_#-]/g;
-            ValidationInputByRegex(editdata421, editdata421Regex);
-            const editdata51 = document.createElement("td");
-            const editdata52 = document.createElement("td");
-            const editdata521 = document.createElement("textarea");
-            ValidationInputByRegex(editdata521, editdata421Regex);
-            const editdata61 = document.createElement("td");
-            const editdata62 = document.createElement("td");
-            const editdata621 = document.createElement("textarea");
-            ValidationInputByRegex(editdata621, editdata421Regex);
-            const editdata71 = document.createElement("td");
-            const editdata72 = document.createElement("td");
-            const savebtn = document.createElement("button");
-
-            savebtn.textContent = "Save";
-            savebtn.type = "submit";
-            const cancelbtn = document.createElement("button");
-            cancelbtn.textContent = "cancel ";
-            editdata11.textContent = "Project Title:";
-            editdata121.value = project.title;
-            editdata21.textContent = "Project Description:";
-            editdata221.value = project.description;
-            editdata31.textContent = "image URL:";
-
-            editdata321.addEventListener("change", function () {
-              const file = editdata321.files[0];
               if (file) {
-                fileNameInput.value = file.name;
-              } else {
-                fileNameInput.value = `data:image/${imageFormat};base64,`;
+                reader = new FileReader();
+
+                reader.onload = (fileEvent) => {
+                  base64String = btoa(fileEvent.target.result);
+                  console.log(base64String);
+                };
+
+                reader.readAsBinaryString(file);
               }
-            });
-            editdata41.textContent = "Tags:";
-            editdata421.value = project.tags;
-            editdata61.textContent = "Languages:";
-            editdata621.value = project.languages;
-            editdata51.textContent = "Technology:";
-            editdata521.value = project.technology;
-            editdata72.appendChild(cancelbtn);
-            editdata71.appendChild(savebtn);
+            }
+          });
+          const editdata41 = document.createElement("td");
+          const editdata42 = document.createElement("td");
+          const editdata421 = document.createElement("textarea");
+          const editdata421Regex = /[^a-zA-Z0-9\s,_#-]/g;
+          ValidationInputByRegex(editdata421, editdata421Regex);
+          const editdata51 = document.createElement("td");
+          const editdata52 = document.createElement("td");
+          const editdata521 = document.createElement("textarea");
+          ValidationInputByRegex(editdata521, editdata421Regex);
+          const editdata61 = document.createElement("td");
+          const editdata62 = document.createElement("td");
+          const editdata621 = document.createElement("textarea");
+          ValidationInputByRegex(editdata621, editdata421Regex);
+          const editdata71 = document.createElement("td");
+          const editdata72 = document.createElement("td");
+          const savebtn = document.createElement("button");
 
-            editdata62.appendChild(editdata621);
-            editdata52.appendChild(editdata521); //2nd td
-            editdata42.appendChild(editdata421);
-            editdata32.appendChild(editdata321);
-            //    editdata32.appendChild(fileNameInput); //2nd td
-            editdata22.appendChild(editdata221); //2nd td
-            editdata12.appendChild(editdata121); //2nd td
-            editrow1.appendChild(editdata11);
-            editrow1.appendChild(editdata12);
-            editrow2.appendChild(editdata21);
-            editrow2.appendChild(editdata22);
-            editrow3.appendChild(editdata31);
-            editrow3.appendChild(editdata32);
-            editrow4.appendChild(editdata41);
-            editrow4.appendChild(editdata42);
-            editrow5.appendChild(editdata51);
-            editrow5.appendChild(editdata52);
-            editrow6.appendChild(editdata61);
-            editrow6.appendChild(editdata62);
-            editrow7.appendChild(editdata71);
-            editrow7.appendChild(editdata72);
-            editTable.appendChild(editrow1);
-            editTable.appendChild(editrow2);
-            editTable.appendChild(editrow3);
-            editTable.appendChild(editrow4);
-            editTable.appendChild(editrow5);
-            editTable.appendChild(editrow6);
-            editTable.appendChild(editrow7);
-            editform.appendChild(editTable);
+          savebtn.textContent = "Save";
+          savebtn.type = "submit";
+          const cancelbtn = document.createElement("button");
+          cancelbtn.textContent = "cancel ";
+          editdata11.textContent = "Project Title:";
+          editdata121.value = project.title;
+          editdata21.textContent = "Project Description:";
+          editdata221.value = project.description;
+          editdata31.textContent = "image URL:";
 
-            cancelbtn.onclick = function (e) {
-              e.preventDefault();
-              editProjectModal.style.display = "none";
-            };
-            //editform.appendChild(savebtn);
-            editProjectModal.appendChild(editform);
-            // editProjectModal.appendChild(cancelbtn);
+          editdata321.addEventListener("change", function () {
+            const file = editdata321.files[0];
+            if (file) {
+              fileNameInput.value = file.name;
+            } else {
+              fileNameInput.value = `data:image/${imageFormat};base64,`;
+            }
+          });
+          editdata41.textContent = "Tags:";
+          editdata421.value = project.tags;
+          editdata61.textContent = "Languages:";
+          editdata621.value = project.languages;
+          editdata51.textContent = "Technology:";
+          editdata521.value = project.technology;
+          editdata72.appendChild(cancelbtn);
+          editdata71.appendChild(savebtn);
 
-            savebtn.onclick = async function (e) {
-              e.preventDefault();
-              const projectIndex = userProjectData.findIndex(
-                (p) => p.projectId === project.projectId
+          editdata62.appendChild(editdata621);
+          editdata52.appendChild(editdata521); //2nd td
+          editdata42.appendChild(editdata421);
+          editdata32.appendChild(editdata321);
+          //    editdata32.appendChild(fileNameInput); //2nd td
+          editdata22.appendChild(editdata221); //2nd td
+          editdata12.appendChild(editdata121); //2nd td
+          editrow1.appendChild(editdata11);
+          editrow1.appendChild(editdata12);
+          editrow2.appendChild(editdata21);
+          editrow2.appendChild(editdata22);
+          editrow3.appendChild(editdata31);
+          editrow3.appendChild(editdata32);
+          editrow4.appendChild(editdata41);
+          editrow4.appendChild(editdata42);
+          editrow5.appendChild(editdata51);
+          editrow5.appendChild(editdata52);
+          editrow6.appendChild(editdata61);
+          editrow6.appendChild(editdata62);
+          editrow7.appendChild(editdata71);
+          editrow7.appendChild(editdata72);
+          editTable.appendChild(editrow1);
+          editTable.appendChild(editrow2);
+          editTable.appendChild(editrow3);
+          editTable.appendChild(editrow4);
+          editTable.appendChild(editrow5);
+          editTable.appendChild(editrow6);
+          editTable.appendChild(editrow7);
+          editform.appendChild(editTable);
+
+          cancelbtn.onclick = function (e) {
+            e.preventDefault();
+            editProjectModal.style.display = "none";
+          };
+          //editform.appendChild(savebtn);
+          editProjectModal.appendChild(editform);
+          // editProjectModal.appendChild(cancelbtn);
+
+          savebtn.onclick = async function (e) {
+            e.preventDefault();
+            if (
+              editdata121.value == "" ||
+              editdata221.value == "" ||
+              editdata421.value == "" ||
+              editdata621.value == "" ||
+              editdata521.value == ""
+            ) {
+              alert("all fields are required");
+              return;
+            }
+            // const projectIndex = userProjectData.findIndex(
+            //   (p) => p.projectId === project.projectId
+            // );
+
+            console.log("after default edit project click submit");
+
+            //localStorage.setItem("allproject", JSON.stringify(userProjectData));
+
+            try {
+              const updatedProject = {
+                username: user1.email,
+                title: editdata121.value,
+                description: editdata221.value,
+                img: base64String || `${project.img}`,
+                tags: editdata421.value,
+                languages: editdata621.value,
+                technology: editdata521.value,
+              };
+              const res = await fetch(
+                `http://localhost:8000/projectUpdate/${project.ID}`,
+                {
+                  method: "PUT",
+                  headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token.substring(
+                      1,
+                      token.length - 1
+                    )}`,
+                  },
+                  body: JSON.stringify(updatedProject), // Convert user object to JSON
+                }
               );
 
-              console.log("after default edit project click submit");
-              if (projectIndex !== -1) {
-                userProjectData[projectIndex].username = user1.email;
-                userProjectData[projectIndex].title = editdata121.value;
-                userProjectData[projectIndex].description = editdata221.value;
-                userProjectData[projectIndex].img =
-                  base64String || `${project.img}`;
-                userProjectData[projectIndex].tags =
-                  editdata421.value.split(",");
-                userProjectData[projectIndex].languages =
-                  editdata621.value.split(",");
-                userProjectData[projectIndex].technology =
-                  editdata521.value.split(",");
-                console.log(userProjectData);
-
-                //localStorage.setItem("allproject", JSON.stringify(userProjectData));
-
-                try {
-                  const updatedProject = userProjectData[projectIndex];
-                  const res = await fetch(
-                    `http://localhost:8000/projectUpdate/${project.projectId}`,
-                    {
-                      method: "PUT",
-                      headers: {
-                        "Content-Type": "application/json",
-                        Authorization: `Bearer ${token.substring(
-                          1,
-                          token.length - 1
-                        )}`,
-                      },
-                      body: JSON.stringify(updatedProject), // Convert user object to JSON
-                    }
-                  );
-
-                  if (res.status === 200) {
-                    alert("Project Updated successfully");
-                    editProjectModal.style.display = "none";
-                    userpro();
-                    return;
-                    userpro();
-                  } else if (res.status === 204) {
-                    alert("tags technology and languages required");
-                  } else if (res.status === 400) {
-                    alert("User not logged in");
-                  } else if (res.status === 404) {
-                    alert("User not found");
-                  } else {
-                    alert("Error ha Project added  ma");
-                  }
-                } catch (error) {
-                  console.error("Error:", error);
-                  alert("An error occurred during login");
-                }
+              if (res.status === 200) {
+                alert("Project Updated successfully");
+                editProjectModal.style.display = "none";
+                userpro();
+                return;
+              } else if (res.status === 204) {
+                alert("tags technology and languages required");
+              } else if (res.status === 400) {
+                alert("User not logged in");
+              } else if (res.status === 400) {
+                alert("project not found");
+              } else {
+                alert(" server Error   ");
               }
-            };
+            } catch (error) {
+              console.error("Error:", error);
+              alert("An error occurred during login");
+            }
           };
+        };
 
-          const deleteProject = document.createElement("button");
-          //   userSourceBtn.href = "#";
-          deleteProject.classList.add("usersourceBtn");
-          deleteProject.textContent = "delete";
-          deleteProject.onclick = async function (e) {
-            e.preventDefault();
-            deleteUserProject(project.projectId);
-          };
-          userProjectBtn.appendChild(UserEditProject);
-          userProjectBtn.appendChild(deleteProject);
+        const deleteProject = document.createElement("button");
+        //   userSourceBtn.href = "#";
+        deleteProject.classList.add("usersourceBtn");
+        deleteProject.textContent = "delete";
+        deleteProject.onclick = async function (e) {
+          e.preventDefault();
+          deleteUserProject(project.ID);
+        };
+        userProjectBtn.appendChild(UserEditProject);
+        userProjectBtn.appendChild(deleteProject);
 
-          userProjectDetails.appendChild(userProjectTitle);
-          userProjectDetails.appendChild(userProjectDescription);
-          userProjectDetails.appendChild(userProjectBtn);
+        userProjectDetails.appendChild(userProjectTitle);
+        userProjectDetails.appendChild(userProjectDescription);
+        userProjectDetails.appendChild(userProjectBtn);
 
-          userProjectRow.appendChild(userProjectDetails);
-          userProjectRow.appendChild(userProjectImg);
+        userProjectRow.appendChild(userProjectDetails);
+        userProjectRow.appendChild(userProjectImg);
 
-          if (userProjectsContainer) {
-            userProjectsContainer.appendChild(userProjectRow);
-          }
+        if (userProjectsContainer) {
+          userProjectsContainer.appendChild(userProjectRow);
         }
+        //}
       });
     });
 }
-searchInput.addEventListener("input", () => {
-  if (searchInput.value !== "") {
-    userpro();
-  } else {
-    userpro();
-  }
-});
 
 userpro();
 // add project function
@@ -520,10 +490,20 @@ addProjectFunction.onclick = (e) => {
       title: adddata121.value,
       description: adddata221.value,
       img: base64String,
-      tags: adddata421.value.split(","),
-      languages: adddata521.value.split(","),
-      technology: adddata621.value.split(","),
+      //img: "img link",
+      tags: adddata421.value,
+      languages: adddata521.value,
+      technology: adddata621.value,
     };
+
+    if (
+      adddata121.value == "" ||
+      adddata221.value == "" ||
+      base64String === ""
+    ) {
+      alert("all fields are required");
+      return;
+    }
 
     try {
       const res = await fetch("http://localhost:8000/userAddProjects", {
@@ -535,16 +515,18 @@ addProjectFunction.onclick = (e) => {
         body: JSON.stringify(addprojectDataForm), // Convert user object to JSON
       });
 
-      if (res.status === 200) {
+      if (res.ok) {
         alert("Project Added successfully");
         addProjectmodal.style.display = "none";
         userpro();
       } else if (res.status === 204) {
         alert("img title and description required");
+        addProjectmodal.style.display = "none";
       } else if (res.status === 400) {
-        alert("User not logged in");
+        alert("Project not Added");
+        addProjectmodal.style.display = "none";
       } else {
-        alert("Error ha Project added  ma");
+        alert("not found");
       }
     } catch (error) {
       console.error("Error:", error);
@@ -561,9 +543,82 @@ addProjectFunction.onclick = (e) => {
     };
   }
 };
+// search Project
+//async function searchProjects() {
+try {
+  const res = await fetch("http://localhost:8000/projects", {
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token.substring(1, token.length - 1)}`,
+    },
+  });
+  const projectData = await res.json();
+  console.log(projectData);
 
+  const filter = searchInput.value.trim().toUpperCase();
+  const projectRows = document.querySelector(".userProjectRow");
+
+  for (let i = 0; i < projectData.length; i++) {
+    const title = projectData[i].title.toUpperCase();
+    const description = projectData[i].description.toUpperCase();
+
+    // let tagsMatch = false;
+    // let languagesMatch = false;
+    // let technologiesMatch = false;
+    // // tags search kr raha ha
+    // for (let k = 0; k < projectData[i].tags.length; k++) {
+    //   const tag = projectData[i].tags[k].toUpperCase();
+    //   if (tag.includes(filter)) {
+    //     tagsMatch = true;
+    //     break;
+    //   }
+    // }
+    // // languange search kr raha ha
+    // for (let k = 0; k < projectData[i].languages.length; k++) {
+    //   const language = projectData[i].languages[k].toUpperCase();
+    //   if (language.includes(filter)) {
+    //     languagesMatch = true;
+    //     break;
+    //   }
+    // }
+    // // technology ko search kr raha ha
+    // for (let k = 0; k < projectData[i].technology.length; k++) {
+    //   const technology = projectData[i].technology[k].toUpperCase();
+    //   if (technology.includes(filter)) {
+    //     technologiesMatch = true;
+    //     break;
+    //   }
+    // }
+
+    if (title.includes(filter) || description.includes(filter)) {
+      projectRows[i].style.display = "";
+    } else {
+      projectRows[i].style.display = "none";
+    }
+  }
+} catch (error) {
+  console.log(error);
+}
+//}
+//searchInput.addEventListener("input", searchProjects);
 // Logout button for admin and user
+
 const logoutbtn = document.getElementById("logout");
+async function logout(e) {
+  e.preventDefault();
+  const res = await fetch("http://localhost:8000/logout", {
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token.substring(1, token.length - 1)}`,
+    },
+  });
+  localStorage.removeItem("user");
+  localStorage.removeItem("admin");
+  localStorage.removeItem("token");
+  console.log(res);
+  const url = "http://127.0.0.1:5500/Client/HTML/login.html";
+  window.location.href = url;
+}
 if (logoutbtn) {
   logoutbtn.onclick = logout;
 }
