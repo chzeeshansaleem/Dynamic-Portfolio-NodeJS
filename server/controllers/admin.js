@@ -120,7 +120,7 @@ function addUser(req, res) {
       const emailPattern = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
 
       if (!emailPattern.test(newUser.email)) {
-        res.writeHead(400, { "Content-Type": "application/json" });
+        res.writeHead(405, { "Content-Type": "application/json" });
         res.end(
           JSON.stringify({
             message: "must be write email formate like  example@gmail.com",

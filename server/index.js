@@ -35,8 +35,6 @@ const server = http.createServer((req, res) => {
 
   if (pathname === "/login" || pathname === "/signup") {
     const id2 = pathname.split("/");
-    //  console.log(id2.length);
-    //console.log("total paths: " + id2);
 
     // route for get and post
     const route = routes.find(

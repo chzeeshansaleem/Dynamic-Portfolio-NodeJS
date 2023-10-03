@@ -103,7 +103,7 @@ function handleSignup(req, res) {
           console.log(userExistsIndex);
           if (userExistsIndex) {
             console.log("User already exists");
-            res.writeHead(400, { "Content-Type": "application/json" });
+            res.writeHead(401, { "Content-Type": "application/json" });
             res.end(
               JSON.stringify({
                 message: "Signup unsuccessful - User already exists",

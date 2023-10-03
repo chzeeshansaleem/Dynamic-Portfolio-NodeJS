@@ -337,6 +337,12 @@ AdminAddUserBtn.onclick = function () {
         phoneNumber: "",
         skills: "",
       };
+      const emailPattern = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
+
+      if (!emailPattern.test(adddata121.value)) {
+        alert("Please enter a valid email");
+        return;
+      }
 
       if (
         adddata121.value.trim() == "" ||
@@ -359,7 +365,7 @@ AdminAddUserBtn.onclick = function () {
         body: JSON.stringify(adduserDataForm),
       });
 
-      if (res.status === 400) {
+      if (res.status === 405) {
         alert("this email not allowed");
         return;
       } else if (res.ok) {

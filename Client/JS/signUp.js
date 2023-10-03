@@ -54,7 +54,7 @@ async function handleSignup(event) {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(user), // Convert user object to JSON
+        body: JSON.stringify(user),
       });
       console.log(res.status);
       if (!res.status === 402) {
@@ -65,11 +65,11 @@ async function handleSignup(event) {
         alert("User signed up successfully");
         const url = "http://127.0.0.1:5500/Client/HTML/login.html";
         window.location.href = url;
-      } else if (res.status === 400) {
+      } else if (res.status === 401) {
         alert("User Already Registered");
-        emprtyFields();
+        //emprtyFields();
       } else {
-        alert("Error ha signup ma");
+        alert("Error in signup ");
         emprtyFields();
       }
     } catch (error) {

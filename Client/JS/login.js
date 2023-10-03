@@ -58,7 +58,7 @@ async function handleLogin(e) {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(user1), // Convert user object to JSON
+      body: JSON.stringify(user1),
     });
     const result = await res.json();
     // console.log(result);
