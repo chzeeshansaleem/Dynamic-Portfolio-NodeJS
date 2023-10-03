@@ -84,7 +84,7 @@ async function userdata() {
 }
 userdata();
 const testData = async () =>
-  await fetch("http://localhost:8000/projects", {
+  await fetch("http://localhost:8000/projects?searchQuery=", {
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token.substring(1, token.length - 1)}`,
@@ -92,8 +92,8 @@ const testData = async () =>
   })
     .then((res) => res.json())
     .then((projectData) => {
-      console.log(projectData.insertResult);
-      projectData.insertResult.forEach((project) => {
+      console.log(projectData);
+      projectData.projects.forEach((project) => {
         const projectRow = document.createElement("div");
         projectRow.classList.add("ProjectRow");
         const projectDetails = document.createElement("div");

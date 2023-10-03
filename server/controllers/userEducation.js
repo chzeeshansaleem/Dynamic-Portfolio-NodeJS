@@ -23,13 +23,13 @@ function showEducation(req, res) {
       }
       if (result.length === 0) {
         res.writeHead(200, { "Content-Type": "application/json" });
-        res.end(JSON.stringify({ message: "record not found" }));
+        res.end(JSON.stringify({ message: "record not found", result }));
         return;
       }
       console.log("education show successfully");
       res.writeHead(200, { "Content-Type": "application/json" });
       // res.write(JSON.stringify(result));
-      res.end(JSON.stringify(result));
+      res.end(JSON.stringify({ message: "record found", result }));
     });
   } catch (error) {
     console.error("Data not found ", error);

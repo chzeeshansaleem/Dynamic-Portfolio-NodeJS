@@ -1,4 +1,3 @@
-import users from "../../server/db/user.json" assert { type: "json" };
 import "dotenv/config";
 import { data } from "../index.js";
 import { connectionString as con } from "../config/config.js";

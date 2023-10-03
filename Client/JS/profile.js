@@ -105,7 +105,7 @@ async function userProfile() {
       educationProfile.appendChild(educationList);
       const skillArr = user1.skill.split(",");
       const skillsList = document.createElement("ul");
-      if (skillArr) {
+      if (skillArr.length > 0) {
         skillArr.forEach((skill) => {
           const listItem = document.createElement("li");
           listItem.style.listStyle = "none";
@@ -370,89 +370,100 @@ async function createEducationTable() {
     endDateHeader.textContent = "End Date";
     const editHeader = document.createElement("th");
     editHeader.textContent = "Edit";
-    const deleteHeader = document.createElement("th"); // Add a header for delete button
-    deleteHeader.textContent = "Delete"; // Set header text for delete button
+    const deleteHeader = document.createElement("th");
+    deleteHeader.textContent = "Delete";
     headerRow.appendChild(degreeHeader);
     headerRow.appendChild(universityHeader);
     headerRow.appendChild(startDateHeader);
     headerRow.appendChild(endDateHeader);
     headerRow.appendChild(editHeader);
-    headerRow.appendChild(deleteHeader); // Append delete header to the table
+    headerRow.appendChild(deleteHeader);
     educationTable.appendChild(headerRow);
+    if (users.result.length == 0) {
+      const noRecordsRow = document.createElement("tr");
+      const noRecordsCell = document.createElement("td");
+      noRecordsCell.setAttribute("colspan", "6");
+      noRecordsCell.textContent = "Record not found";
+      noRecordsRow.appendChild(noRecordsCell);
+      educationTable.appendChild(noRecordsRow);
+    } else {
+      users.result.forEach((item, index) => {
+        const row = document.createElement("tr");
+        const degreeCell = document.createElement("td");
+        degreeCell.textContent = item.degree;
+        console.log(item.degree);
+        const universityCell = document.createElement("td");
+        universityCell.textContent = item.university;
+        const startDateCell = document.createElement("td");
+        const newDate = new Date(item.startDate);
+        startDateCell.textContent = newDate.toLocaleDateString();
+        const endDateCell = document.createElement("td");
+        console.log(newDate.toLocaleDateString());
+        const newEndDate = new Date(item.endDate);
+        endDateCell.textContent = newEndDate.toLocaleDateString();
+        const editCell = document.createElement("td");
 
-    users.forEach((item, index) => {
-      const row = document.createElement("tr");
-      const degreeCell = document.createElement("td");
-      degreeCell.textContent = item.degree;
-      console.log(item.degree);
-      const universityCell = document.createElement("td");
-      universityCell.textContent = item.university;
-      const startDateCell = document.createElement("td");
-      startDateCell.textContent = item.startDate;
-      const endDateCell = document.createElement("td");
-      endDateCell.textContent = item.endDate;
-      const editCell = document.createElement("td");
+        const editButton = document.createElement("button");
+        editButton.textContent = "Edit";
+        editButton.style.background = "lightgreen";
+        editButton.style.padding = "5px 20px";
+        editButton.style.border = "none";
+        editButton.style.fontWeight = "bold";
+        const educationEditForm = document.querySelector(".educationEditForm");
 
-      const editButton = document.createElement("button");
-      editButton.textContent = "Edit";
-      editButton.style.background = "lightgreen";
-      editButton.style.padding = "5px 20px";
-      editButton.style.border = "none";
-      editButton.style.fontWeight = "bold";
-      const educationEditForm = document.querySelector(".educationEditForm");
+        // Replace with your button
+        editButton.addEventListener("click", () => {
+          const educationEditForm11 = createEducationEditForm(item, item.ID);
+          // Assuming you have a container element to append the form to
+          const formContainer = document.getElementById("formContainer");
+          educationEditForm.appendChild(educationEditForm11);
+        });
+        const deleteCell = document.createElement("td"); // Create a cell for delete button
+        const deleteButton = document.createElement("button");
+        deleteButton.textContent = "Delete";
 
-      // Replace with your button
-      editButton.addEventListener("click", () => {
-        const educationEditForm11 = createEducationEditForm(item, item.ID);
-        // Assuming you have a container element to append the form to
-        const formContainer = document.getElementById("formContainer");
-        educationEditForm.appendChild(educationEditForm11);
-      });
-      const deleteCell = document.createElement("td"); // Create a cell for delete button
-      const deleteButton = document.createElement("button");
-      deleteButton.textContent = "Delete";
-
-      deleteButton.style.background = "red";
-      deleteButton.style.padding = "5px 20px";
-      deleteButton.style.border = "none";
-      deleteButton.style.fontWeight = "bold";
-      // Add an event listener to the "Delete" button
-      deleteButton.addEventListener("click", async () => {
-        // Remove the education item from the user's education array
-        const res = await fetch(
-          `http://localhost:8000/educationDelete/${item.ID}`,
-          {
-            method: "DELETE",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token.substring(1, token.length - 1)}`,
-            },
+        deleteButton.style.background = "red";
+        deleteButton.style.padding = "5px 20px";
+        deleteButton.style.border = "none";
+        deleteButton.style.fontWeight = "bold";
+        // Add an event listener to the "Delete" button
+        deleteButton.addEventListener("click", async () => {
+          // Remove the education item from the user's education array
+          const res = await fetch(
+            `http://localhost:8000/educationDelete/${item.ID}`,
+            {
+              method: "DELETE",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token.substring(1, token.length - 1)}`,
+              },
+            }
+          );
+          if (res.status === 200) {
+            alert("deleted successfully");
+          } else {
+            alert;
           }
-        );
-        if (res.status === 200) {
-          alert("deleted successfully");
-        } else {
-          alert;
-        }
-        // Re-render the education table with the updated data
-        createEducationTable();
-        // (You might also want to save the changes to your database or storage here)
+          // Re-render the education table with the updated data
+          createEducationTable();
+          // (You might also want to save the changes to your database or storage here)
+        });
+
+        editCell.appendChild(editButton);
+        deleteCell.appendChild(deleteButton); // Add the delete button to the delete cell
+
+        // Add the cells to the row
+        row.appendChild(degreeCell);
+        row.appendChild(universityCell);
+        row.appendChild(startDateCell);
+        row.appendChild(endDateCell);
+        row.appendChild(editCell);
+        row.appendChild(deleteCell); // Add the delete cell to the row
+
+        // Add the row to the table
+        educationTable.appendChild(row);
       });
-
-      editCell.appendChild(editButton);
-      deleteCell.appendChild(deleteButton); // Add the delete button to the delete cell
-
-      // Add the cells to the row
-      row.appendChild(degreeCell);
-      row.appendChild(universityCell);
-      row.appendChild(startDateCell);
-      row.appendChild(endDateCell);
-      row.appendChild(editCell);
-      row.appendChild(deleteCell); // Add the delete cell to the row
-
-      // Add the row to the table
-      educationTable.appendChild(row);
-    });
+    }
   } catch (error) {
     alert("Error: " + error);
   }
@@ -711,10 +722,13 @@ async function createExperienceTable() {
     const users = await response.json();
 
     console.log(users);
-    if (users.message == "record not found") {
-      experienceTable;
-      console.log("no education found");
-      return;
+    if (users.message === "record not found") {
+      const noRecordsRow = document.createElement("tr");
+      const noRecordsCell = document.createElement("td");
+      noRecordsCell.setAttribute("colspan", "6");
+      noRecordsCell.textContent = "Record not found";
+      noRecordsRow.appendChild(noRecordsCell);
+      experienceTable.appendChild(noRecordsRow);
     } else {
       users.forEach((item, index) => {
         const row = document.createElement("tr");
@@ -723,9 +737,13 @@ async function createExperienceTable() {
         const companyCell = document.createElement("td");
         companyCell.textContent = item.company;
         const startDateCell = document.createElement("td");
-        startDateCell.textContent = item.startDate;
+        const newDate = new Date(item.startDate);
+        startDateCell.textContent = newDate.toLocaleDateString();
         const endDateCell = document.createElement("td");
-        endDateCell.textContent = item.endDate;
+        console.log(newDate.toLocaleDateString());
+        const newEndDate = new Date(item.endDate);
+        endDateCell.textContent = newEndDate.toLocaleDateString();
+        //   endDateCell.textContent = item.endDate;
         const editCell = document.createElement("td");
         const editButton = document.createElement("button");
         editButton.textContent = "Edit";
@@ -794,7 +812,9 @@ async function createExperienceTable() {
         experienceTable.appendChild(row);
       });
     }
-  } catch (error) {}
+  } catch (error) {
+    console.log("error: " + error);
+  }
 
   // Populate the table with experience data
 
@@ -958,8 +978,8 @@ if (editProfile) {
       inputEditFields.appendChild(editdata422);
       inputEditFields.appendChild(editdata423);
       inputEditFields.appendChild(editdata424);
-      inputEditFields.appendChild(presentStatusLabel);
-      inputEditFields.appendChild(presentStatusInput);
+      // inputEditFields.appendChild(presentStatusLabel);
+      //inputEditFields.appendChild(presentStatusInput);
       //inputEditFields.appendChild(presentStatusText);
 
       presentStatusInput.addEventListener("change", () => {
@@ -1138,8 +1158,8 @@ if (editProfile) {
       experEditFields.appendChild(editdata622);
       experEditFields.appendChild(editdata623);
       experEditFields.appendChild(editdata624);
-      experEditFields.appendChild(presentStatusLabelExp);
-      experEditFields.appendChild(presentStatusInputexp);
+      //experEditFields.appendChild(presentStatusLabelExp);
+      //experEditFields.appendChild(presentStatusInputexp);
       //inputEditFields.appendChild(presentStatusText);
 
       presentStatusInputexp.addEventListener("change", () => {

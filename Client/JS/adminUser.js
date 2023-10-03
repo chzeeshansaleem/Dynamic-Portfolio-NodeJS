@@ -72,16 +72,20 @@ async function usershow() {
     adminTableHeadName.textContent = "Name";
     const adminTableHeadEmail = document.createElement("th");
     adminTableHeadEmail.textContent = "Email";
+    const adminTableHeadPhoneNumber = document.createElement("th");
+    adminTableHeadPhoneNumber.textContent = "phone";
     const adminTableHeadRole = document.createElement("th");
     adminTableHeadRole.textContent = "Role";
     const adminTableHeadActions = document.createElement("th");
     adminTableHeadActions.colSpan = "2";
     adminTableHeadActions.textContent = "Actions";
-
+    adminTableHeadActions.style.textAlign = "center";
     adminTableHeader.appendChild(adminTableHeadName);
     adminTableHeader.appendChild(adminTableHeadEmail);
+    adminTableHeader.appendChild(adminTableHeadPhoneNumber);
     adminTableHeader.appendChild(adminTableHeadRole);
     adminTableHeader.appendChild(adminTableHeadActions);
+
     adminTable.appendChild(adminTableHeader);
 
     try {
@@ -115,6 +119,8 @@ async function usershow() {
         const adminTableRowTdEmail = document.createElement("td");
         const adminTableRowTdRole = document.createElement("td");
         adminTableRowTdRole.textContent = user.role;
+        const adminTableRowTdPhone = document.createElement("td");
+        adminTableRowTdPhone.textContent = user.phone;
         adminTableRowTdEmail.textContent = user.email;
         const adminTableRowTdAction = document.createElement("td");
         const adminTableRowTdAction2 = document.createElement("td");
@@ -128,6 +134,7 @@ async function usershow() {
         adminTableRowTdAction.appendChild(adminAction);
         adminTableRow.appendChild(adminTableRowTdName);
         adminTableRow.appendChild(adminTableRowTdEmail);
+        adminTableRow.appendChild(adminTableRowTdPhone);
         adminTableRow.appendChild(adminTableRowTdRole);
 
         adminTableRow.appendChild(adminTableRowTdAction2);
@@ -205,7 +212,9 @@ async function usershow() {
           deleteUserProject(user.email);
         };
       });
-    } catch (error) {}
+    } catch (error) {
+      console.log(error);
+    }
     adminuser.appendChild(adminTable);
   }
 }
@@ -232,10 +241,6 @@ AdminAddUserBtn.onclick = function () {
   const adddata12 = document.createElement("td");
   const adddata121 = document.createElement("input");
   adddata121.type = "email";
-  adddata121.setAttribute(
-    "pattern",
-    "[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,4}"
-  );
 
   // adddata121.setAttribute("type", "email");
   const adddata121Regex = /[^a-zA-Z0-9\s,._@-]/g;
@@ -330,7 +335,7 @@ AdminAddUserBtn.onclick = function () {
         role: selectedRole,
         name: adddata421.value,
         phoneNumber: "",
-        skills: [],
+        skills: "",
       };
 
       if (
@@ -355,23 +360,20 @@ AdminAddUserBtn.onclick = function () {
       });
 
       if (res.status === 400) {
-        alert("this email already exist");
+        alert("this email not allowed");
         return;
       } else if (res.ok) {
         alert("user added successfully");
       } else if (res.status === 493) {
-        alert("must be a valid email");
+        alert("email already exists");
       } else if (res.status === 403) {
-        alert("You are not authorized to add user");
+        alert("You are not authorized please login again");
       } else {
         alert("error from server");
       }
     } catch (error) {
       console.log(error);
     }
-    // jsonfile.unshift(adduserDataForm);
-    // localStorage.setItem("users", JSON.stringify(jsonfile));
-
     AdminAddUser.style.display = "none";
     adminTable.innerHTML = "";
     usershow();
@@ -410,44 +412,14 @@ const searchInput = document.getElementById("searchInput");
 const searchInputRegex = /[^a-zA-Z0-9\s,.@_-]/g;
 ValidationInputByRegex(searchInput, searchInputRegex);
 if (searchInput) {
-  searchInput.addEventListener("input", usershow);
+  let timeoutId;
+
+  searchInput.addEventListener("keyup", function () {
+    clearTimeout(timeoutId);
+
+    timeoutId = setTimeout(usershow, 1000);
+  });
 }
-// async function SearchSuggestion() {
-//   try {
-//     const res = await fetch("http://localhost:8000", {
-//       headers: {
-//         "Content-Type": "application/json",
-//         Authorization: `Bearer ${Admintoken.substring(
-//           1,
-//           Admintoken.length - 1
-//         )}`,
-//       },
-//     });
-//     const jsonfile = await res.json();
-//     console.log(jsonfile);
-//     const filter = document.getElementById("searchInput").value.toLowerCase();
-//     let myTable = document.getElementById("myTable");
-//     let tr = myTable.getElementsByTagName("tr");
-
-//     for (let i = 1; i < tr.length; i++) {
-//       let email = jsonfile[i - 1]?.email?.toLowerCase();
-//       let name = jsonfile[i - 1]?.name?.toLowerCase();
-//       let phoneNumber = jsonfile[i - 1]?.phone;
-
-//       if (
-//         email?.includes(filter) ||
-//         name?.includes(filter) ||
-//         phoneNumber?.includes(filter)
-//       ) {
-//         tr[i].style.display = "";
-//       } else {
-//         tr[i].style.display = "none";
-//       }
-//     }
-//   } catch (error) {
-//     console.error("Error:", error);
-//   }
-// }
 
 const logoutbtn = document.getElementById("logout");
 async function logoutAdmin() {

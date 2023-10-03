@@ -3,13 +3,12 @@ import "dotenv/config";
 import url from "url";
 import { routes } from "./routes/routes.js";
 import { setToken, getToken, verifyToken1 } from "./Authentication/verify.js";
-//import tokenData from "./db/tokenSession.json" assert { type: "json" };
 const port = process.env.PORT || 8000;
 export var data;
 import {
-  createDatabase,
   connectionWithDB,
   connectionString as con,
+  creatTables,
 } from "./config/config.js";
 import sql from "msnodesqlv8";
 const server = http.createServer((req, res) => {
@@ -35,7 +34,6 @@ const server = http.createServer((req, res) => {
   console.log("pathname: ", pathname);
 
   if (pathname === "/login" || pathname === "/signup") {
-    // If it's a login or signup route, no token verification is required
     const id2 = pathname.split("/");
     //  console.log(id2.length);
     //console.log("total paths: " + id2);
@@ -45,15 +43,8 @@ const server = http.createServer((req, res) => {
       (r) => r.path === `/${id2[1]}` && r.method === req.method
     );
 
-    // route1 for update and delete
-    const route1 = routes.find(
-      (r) => r.path === `/${id2[1]}/` && r.method === req.method
-    );
-
     if (route) {
       route.handler(req, res);
-    } else if (route1) {
-      route1.handler(req, res, id2[2]);
     } else {
       console.log("page not found from routes");
       res.writeHead(404, { "Content-Type": "text/plain" });
@@ -76,6 +67,7 @@ const server = http.createServer((req, res) => {
       }
 
       console.log("Token get successfully");
+      // token get  from database and verified successfully then go if -->else delete  token from token Table
       if (tokenVerified != null) {
         const tokenExist = result.findIndex((user) => {
           user.username === tokenVerified.email && user.token === token;
@@ -89,12 +81,18 @@ const server = http.createServer((req, res) => {
 
           // route for get and post
           const route = routes.find(
-            (r) => r.path === `/${id2[1]}` && r.method === req.method
+            (r) =>
+              r.path === `/${id2[1]}` &&
+              r.method === req.method &&
+              r.role === data.role
           );
 
           // route1 for update and delete
           const route1 = routes.find(
-            (r) => r.path === `/${id2[1]}/` && r.method === req.method
+            (r) =>
+              r.path === `/${id2[1]}/` &&
+              r.method === req.method &&
+              r.role === data.role
           );
 
           if (route) {
@@ -107,18 +105,6 @@ const server = http.createServer((req, res) => {
             res.end("Not Found");
           }
         }
-        // else {
-        //   // table ma nai ha per token ka time ha
-        //   console.log("User logged out");
-        //   console.error("from  show user profile Token verification failed");
-
-        //   res.writeHead(403, { "Content-Type": "application/json" });
-        //   res.end(
-        //     JSON.stringify({
-        //       message: " User Not Authorized",
-        //     })
-        //   );
-        // }
       } else {
         const tokenExistIndex = result.findIndex(
           (user) => user.token === token
@@ -144,7 +130,7 @@ const server = http.createServer((req, res) => {
         );
         return;
       }
-
+      // token unverified  and also deleted from the database mean logout the user
       if (!tokenVerified) {
         console.log("Token verification failed");
         res.writeHead(401, { "Content-Type": "text/plain" });
@@ -184,14 +170,12 @@ const server = http.createServer((req, res) => {
           res.writeHead(404, { "Content-Type": "text/plain" });
           res.end("Not Found or Unauthorized");
         }
-        // res.writeHead(200, "Content-Type : application/json");
-        // res.end(JSON.stringify("userToken ath"));
-        // console.log("tokenVerified from index ", tokenVerified);
       }
     });
   }
 });
 //createDatabase();
+//creatTables();
 connectionWithDB();
 server.listen(port, "127.0.0.1", () => {
   console.log("Server Running on: " + port);

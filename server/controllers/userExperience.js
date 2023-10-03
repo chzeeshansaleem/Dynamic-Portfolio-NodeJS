@@ -18,7 +18,7 @@ function showExperience(req, res) {
       }
       if (result.length === 0) {
         res.writeHead(200, { "Content-Type": "application/json" });
-        res.end(JSON.stringify({ message: "record not found" }));
+        res.end(JSON.stringify({ message: "record not found", result }));
         return;
       }
 

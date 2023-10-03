@@ -23,8 +23,9 @@ if (!Admintoken1) {
 }
 
 const projectsContainer = document.querySelector(".projects");
-
+const modal = document.querySelector(".modal");
 async function testData() {
+  projectsContainer.innerHTML = "";
   const searchProject = document.getElementById("searchInput").value.trim();
 
   const res = await fetch(
@@ -41,42 +42,43 @@ async function testData() {
   );
 
   const projectData = await res.json();
-  projectsContainer.innerHTML = "";
+  if (projectData.message === "No projects found.") {
+    const noProjectsMessage = document.createElement("p");
+    noProjectsMessage.textContent = "Project not found";
+    projectsContainer.appendChild(noProjectsMessage);
+  } else {
+    projectData.forEach((project) => {
+      const projectRow = document.createElement("div");
+      projectRow.classList.add("ProjectRow");
+      const projectDetails = document.createElement("div");
+      projectDetails.classList.add("projectDetails");
+      const projectTitle = document.createElement("h3");
+      projectTitle.textContent = project.title;
+      const projectDescription = document.createElement("p");
+      projectDescription.classList.add("details");
+      if (project.description.length > 150) {
+        projectDescription.textContent =
+          project.description.slice(0, 150) + "...";
+      } else {
+        projectDescription.textContent = project.description;
+      }
 
-  projectData.forEach((project) => {
-    const projectRow = document.createElement("div");
-    projectRow.classList.add("ProjectRow");
-    const projectDetails = document.createElement("div");
-    projectDetails.classList.add("projectDetails");
-    const projectTitle = document.createElement("h3");
-    projectTitle.textContent = project.title;
-    const projectDescription = document.createElement("p");
-    projectDescription.classList.add("details");
-    if (project.description.length > 150) {
-      projectDescription.textContent =
-        project.description.slice(0, 150) + "...";
-    } else {
-      projectDescription.textContent = project.description;
-    }
+      const projectBtn = document.createElement("div");
+      projectBtn.classList.add("projectBtn");
+      const probtn1 = document.createElement("div");
+      probtn1.classList.add("proBtn1");
+      const probtn2 = document.createElement("div");
+      probtn2.classList.add("proBtn1");
+      const liveBtn = document.createElement("button");
+      liveBtn.classList.add("liveBtn");
+      liveBtn.textContent = "Details";
+      const projectImg = document.createElement("div");
+      projectImg.classList.add("projectImg");
+      // projectImg.style.backgroundImage = `url(${project.img})`;
+      const imageFormat = "jpg" || "png" || "jpeg";
+      projectImg.style.backgroundImage = `url(data:image/${imageFormat};base64,${project.img})`;
 
-    const projectBtn = document.createElement("div");
-    projectBtn.classList.add("projectBtn");
-    const probtn1 = document.createElement("div");
-    probtn1.classList.add("proBtn1");
-    const probtn2 = document.createElement("div");
-    probtn2.classList.add("proBtn1");
-    const liveBtn = document.createElement("button");
-    liveBtn.classList.add("liveBtn");
-    liveBtn.textContent = "Details";
-    const projectImg = document.createElement("div");
-    projectImg.classList.add("projectImg");
-    // projectImg.style.backgroundImage = `url(${project.img})`;
-    const imageFormat = "jpg" || "png" || "jpeg";
-    projectImg.style.backgroundImage = `url(data:image/${imageFormat};base64,${project.img})`;
-
-    function modalProject() {
-      const modal = document.querySelector(".modal");
-      if (modal) {
+      function modalProject() {
         modal.style.display = "block";
         const modalPic = document.querySelector(".modalPic");
         const imageFormat = "jpg" || "png" || "jpeg";
@@ -131,111 +133,46 @@ async function testData() {
         modalDetails.appendChild(lang);
         modalDetails.appendChild(languageUl);
       }
-    }
-    // sirf see live per click kr k
-    liveBtn.onclick = () => {
-      console.log("Live Button Clicked"); // Debugging
-      modalProject();
-    };
-    projectDescription.onclick = modalProject;
-    // Close modal Btn
-    const cross = document.getElementById("cross");
-    if (cross) {
-      cross.onclick = () => {
-        modal.style.display = "none";
+      // sirf see live per click kr k
+      liveBtn.onclick = () => {
+        console.log("Live Button Clicked");
+        modalProject();
       };
-    }
-    const sourceBtn = document.createElement("a");
-    sourceBtn.href = "#";
-    sourceBtn.classList.add("sourceBtn");
-    sourceBtn.textContent = "Source Code";
-    projectBtn.appendChild(liveBtn);
-    projectBtn.appendChild(sourceBtn);
-    projectDetails.appendChild(projectTitle);
-    projectDetails.appendChild(projectDescription);
-    projectDetails.appendChild(projectBtn);
-    projectRow.appendChild(projectDetails);
-    projectRow.appendChild(projectImg);
-    if (projectsContainer) {
-      projectsContainer.appendChild(projectRow);
-    }
-  });
+      projectDescription.onclick = modalProject;
+      // Close modal Btn
+      const cross = document.getElementById("cross");
+      if (cross) {
+        cross.onclick = () => {
+          modal.style.display = "none";
+        };
+      }
+      const sourceBtn = document.createElement("a");
+      sourceBtn.href = "#";
+      sourceBtn.classList.add("sourceBtn");
+      sourceBtn.textContent = "Source Code";
+      projectBtn.appendChild(liveBtn);
+      projectBtn.appendChild(sourceBtn);
+      projectDetails.appendChild(projectTitle);
+      projectDetails.appendChild(projectDescription);
+      projectDetails.appendChild(projectBtn);
+      projectRow.appendChild(projectDetails);
+      projectRow.appendChild(projectImg);
+      if (projectsContainer) {
+        projectsContainer.appendChild(projectRow);
+      }
+    });
+  }
 }
 
 testData();
+
 const searchInput = document.getElementById("searchInput");
-
+let timeoutId;
 if (searchInput) {
-  searchInput.addEventListener("input", testData);
-}
-
-async function searchProjects() {
-  try {
-    const res = await fetch("http://localhost:8000/projects", {
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${Admintoken.substring(
-          1,
-          Admintoken.length - 1
-        )}`,
-      },
-    });
-    const projectData = await res.json();
-    console.log(projectData);
-
-    const filter = searchInput.value.trim().toUpperCase();
-    const projectRows = document.querySelectorAll(".ProjectRow");
-
-    for (let i = 0; i < projectData.length; i++) {
-      const title = projectData[i].title.toUpperCase();
-      const description = projectData[i].description.toUpperCase();
-
-      let tagsMatch = false;
-      let languagesMatch = false;
-      let technologiesMatch = false;
-      // tags search kr raha ha
-      const tegss = projectData[i].tags.split(",");
-      for (let k = 0; k < tegss.length; k++) {
-        const tag = tegss[k].toUpperCase();
-        if (tag.includes(filter)) {
-          tagsMatch = true;
-          break;
-        }
-      }
-      // languange search kr raha ha
-      const langua = projectData[i].languages.split(",");
-      for (let k = 0; k < langua.length; k++) {
-        const language = langua[k].toUpperCase();
-        if (language.includes(filter)) {
-          languagesMatch = true;
-          break;
-        }
-      }
-      // technology ko search kr raha ha
-      const techno = projectData[i].technology.split(",");
-      for (let k = 0; k < techno.length; k++) {
-        const technology = techno[k].toUpperCase();
-        if (technology.includes(filter)) {
-          technologiesMatch = true;
-          break;
-        }
-      }
-
-      if (
-        title.includes(filter) ||
-        description.includes(filter) ||
-        tagsMatch ||
-        languagesMatch ||
-        technologiesMatch
-      ) {
-        projectRows[i].style.display = "";
-      } else {
-        projectRows[i].style.display = "none";
-      }
-    }
-  } catch (error) {
-    console.log(error);
-  }
+  searchInput.addEventListener("keyup", () => {
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(testData, 1000);
+  });
 }
 
 const logoutbtn = document.getElementById("logout");

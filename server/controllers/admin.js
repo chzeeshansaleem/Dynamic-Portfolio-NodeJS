@@ -8,7 +8,8 @@ import maskText from "../Utility/utilit.js";
 // show user profile on admin pannel
 function showUserProfile(req, res) {
   console.log(req.url);
-  const search = req.url.split("=")[1];
+  const search = decodeURIComponent(req.url.split("=")[1]);
+
   const searchQuery = search || "";
 
   try {
@@ -25,7 +26,7 @@ function showUserProfile(req, res) {
         return;
       }
 
-      let showUserQuery = `SELECT ID, name, email, role FROM users WHERE ID <> '${data.ID}'`;
+      let showUserQuery = `SELECT ID, name, email, role, phone FROM users WHERE ID <> '${data.ID}'`;
 
       if (searchQuery) {
         showUserQuery += ` AND (name LIKE '%${searchQuery}%' OR email LIKE '%${searchQuery}%' OR phone LIKE '%${searchQuery}%')`;
@@ -44,6 +45,7 @@ function showUserProfile(req, res) {
           userCount: countResult[0].userCount,
           adminCount: countResult[0].adminCount,
           totalUsers,
+
           userData: userResult,
         };
 
@@ -115,6 +117,17 @@ function addUser(req, res) {
         );
         return;
       }
+      const emailPattern = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
+
+      if (!emailPattern.test(newUser.email)) {
+        res.writeHead(400, { "Content-Type": "application/json" });
+        res.end(
+          JSON.stringify({
+            message: "must be write email formate like  example@gmail.com",
+          })
+        );
+        return;
+      }
       // now doing masking
       const allowedRegexMail = /[^a-zA-Z0-9@.]/g;
       const AfterMaskingeMail = maskText(newUser.email, allowedRegexMail);
@@ -131,26 +144,45 @@ function addUser(req, res) {
         const userId = uuidv4();
         const { name, email, password, role } = newUser;
         const saltRounds = 10;
-        bcrypt.hash(password, saltRounds, function (err, hash) {
+        const findUserQuery = `SELECT email FROM Users WHERE email='${email}'`;
+        sql.query(con, findUserQuery, (err, user) => {
           if (err) {
-            console.log("error hashing password");
+            console.log("user found error", err);
             res.writeHead(400, { "Content-Type": "application/json" });
-            res.end(JSON.stringify({ message: "error hashing password", err }));
+            res.end(JSON.stringify({ message: err.message }));
             return;
           }
-          console.log("hash password", hash);
-          const adduserQuery = `INSERT INTO Users (ID, name, email, password, role) VALUES ('${userId}', '${name}', '${email}', '${hash}', '${role}')`;
-          sql.query(con, adduserQuery, (err, result) => {
+          if (user === email) {
+            console.log("user found error", err);
+            res.writeHead(493, { "Content-Type": "application/json" });
+            res.end(JSON.stringify({ message: "User Already Exists" }));
+            return;
+          }
+          bcrypt.hash(password, saltRounds, function (err, hash) {
             if (err) {
-              console.log("err from insert user");
-              res.writeHead(493, { "Content-Type": "application" });
-              res.end(JSON.stringify({ message: "err from insert user", err }));
+              console.log("error hashing password");
+              res.writeHead(400, { "Content-Type": "application/json" });
+              res.end(
+                JSON.stringify({ message: "error hashing password", err })
+              );
               return;
             }
-            res.writeHead(200, { "Content-Type": "application" });
-            res.end(
-              JSON.stringify({ message: " Add user by admin successfully " })
-            );
+            console.log("hash password", hash);
+            const adduserQuery = `INSERT INTO Users (ID, name, email, password, role) VALUES ('${userId}', '${name}', '${email}', '${hash}', '${role}')`;
+            sql.query(con, adduserQuery, (err, result) => {
+              if (err) {
+                console.log("err from insert user");
+                res.writeHead(493, { "Content-Type": "application" });
+                res.end(
+                  JSON.stringify({ message: "err from insert user", err })
+                );
+                return;
+              }
+              res.writeHead(200, { "Content-Type": "application" });
+              res.end(
+                JSON.stringify({ message: " Add user by admin successfully " })
+              );
+            });
           });
         });
       } else {
@@ -251,46 +283,19 @@ function deleteUserByAdmin(req, res, userId) {
       console.log(result);
       const userId = result[0].ID;
       console.log(userId);
-      const tokenquery = `DELETE FROM tokenSession WHERE user_id='${userId}'`;
-      const experiencequery = `DELETE FROM Experience WHERE user_id='${userId}'`;
-      const educationquery = `DELETE FROM Education WHERE user_id='${userId}'`;
-      const projectquery = `DELETE FROM Projects WHERE user_id='${userId}'`;
-      const userquery = `DELETE FROM Users WHERE ID='${userId}'`;
 
-      sql.query(con, tokenquery, (err, result) => {
-        if (err) {
-          console.log("error from token delete query");
-        }
-        console.log("token deleted");
-      });
-      sql.query(con, experiencequery, (err, result) => {
-        if (err) {
-          console.log("error from experience query delete query");
-        }
-        console.log("experience query deleted");
-      });
-      sql.query(con, educationquery, (err, result) => {
-        if (err) {
-          console.log("error from education query delete query");
-        }
-        console.log("education query deleted");
-      });
-      sql.query(con, projectquery, (err, result) => {
-        if (err) {
-          console.log("error from project delete query");
-        }
-        console.log("project query deleted");
-      });
+      const userquery = `DELETE FROM Users WHERE ID='${userId}'`;
       sql.query(con, userquery, (err, result) => {
         if (err) {
           console.log("error from user delete query");
+          res.writeHead(400, { "Content-Type": "application/json" });
+          res.end(JSON.stringify({ message: " User Not deleted" }));
+          return;
         }
         console.log("user  deleted");
       });
       res.writeHead(200, { "Content-Type": "application/json" });
-      res.end(
-        JSON.stringify({ message: "all data deleted from admin action" })
-      );
+      res.end(JSON.stringify({ message: " User deleted Successfully" }));
     });
   } catch (error) {
     console.error("Error parsing JSON:", error);

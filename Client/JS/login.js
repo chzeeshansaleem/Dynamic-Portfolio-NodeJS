@@ -47,6 +47,11 @@ async function handleLogin(e) {
     alert("all fields are required");
     return;
   }
+  const emailPattern = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
+  if (!emailPattern.test(email)) {
+    alert("Please enter a valid email address");
+    return;
+  }
   try {
     const res = await fetch("http://localhost:8000/login", {
       method: "POST",

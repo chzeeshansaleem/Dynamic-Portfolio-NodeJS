@@ -41,8 +41,12 @@ async function handleSignup(event) {
     password,
     role: "user",
   };
+  const emailPattern = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
   if (name === "" || email === "" || password === "") {
     alert("Please enter all required fields");
+  } else if (!emailPattern.test(email)) {
+    alert("Please enter a valid email address");
+    return;
   } else {
     try {
       const res = await fetch("http://localhost:8000/signup", {

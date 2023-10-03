@@ -8,14 +8,15 @@ function showProjects(req, res) {
   console.log("user Token", data);
   if (data && data.role === "user") {
     console.log(req.url);
-    const search = req.url.split("=")[1];
-    console.log("search", search);
+    const test = req.url.split("=")[1];
+
+    const search = decodeURIComponent(test);
+
     const searchQuery = search || "";
     const findProjectQuery = `
     SELECT *
     FROM Projects
-    JOIN Users ON Projects.user_id = Users.ID
-    WHERE 
+    WHERE   Projects.user_id = '${data.ID}' AND
       (
         title LIKE '%${searchQuery}%'
         OR description LIKE '%${searchQuery}%'
@@ -23,10 +24,10 @@ function showProjects(req, res) {
         OR technology LIKE '%${searchQuery}%'
         OR languages LIKE '%${searchQuery}%'
       ) 
-      AND Projects.user_id = '${data.ID}'
+    
   `;
 
-    sql.query(con, findProjectQuery, (err, insertResult) => {
+    sql.query(con, findProjectQuery, (err, projects) => {
       if (err) {
         console.error("Error in finding projects", err);
         res.writeHead(400, { "Content-Type": "application/json" });
@@ -37,47 +38,46 @@ function showProjects(req, res) {
           })
         );
       } else {
-        if (insertResult.length === 0) {
+        if (projects.length === 0) {
           res.end(
             JSON.stringify({
               message: "No projects found.",
+              projects,
             })
           );
           return;
         }
-        if (insertResult.length === 0) {
-          res.writeHead(204, { "Content-Type": "application/json" });
-          res.end(JSON.stringify({ message: "Project not found" }));
-          return;
-        }
+
         console.log("Projects found successfully");
 
         res.writeHead(200, { "Content-Type": "application/json" });
         res.end(
           JSON.stringify({
             message: "Successfully found projects",
-            insertResult,
+            projects,
           })
         );
       }
     });
   } else {
-    const search = req.url.split("=")[1];
-    console.log("search", search);
+    const test = req.url.split("=")[1];
+
+    const search = decodeURIComponent(test);
+
     const searchQuery = search || "";
     const findProjectQuery = `
       SELECT *
       FROM Projects
+    
       WHERE
-        (
-          title LIKE '%${searchQuery}%'
-          OR description LIKE '%${searchQuery}%'
-          OR tags LIKE '%${searchQuery}%'
-          OR technology LIKE '%${searchQuery}%'
-          OR languages LIKE '%${searchQuery}%'
-        )
+      (
+        title LIKE '%${searchQuery}%'
+        OR description LIKE '%${searchQuery}%'
+        OR tags LIKE '%${searchQuery}%'
+        OR technology LIKE '%${searchQuery}%'
+        OR languages LIKE '%${searchQuery}%'
+      )
     `;
-
     sql.query(con, findProjectQuery, (err, Result) => {
       if (err) {
         console.error("Error in finding projects", err);
@@ -211,7 +211,7 @@ function addProject(req, res) {
         VALUES ('${projectId}', '${data.ID}', '${title}', '${description}', CONVERT(VARBINARY(MAX), '${img}'), '${languages}', '${tags}', '${technology}')
       `;
 
-          sql.query(con, insertProjectQuery, (err, insertResult) => {
+          sql.query(con, insertProjectQuery, (err, project) => {
             if (err) {
               console.log("project not added", err);
               // res.writeHead(400, { "Content-Type": "application/json" });
@@ -220,8 +220,9 @@ function addProject(req, res) {
                   message: "project not added	",
                 })
               );
+              return;
             } else {
-              console.log(insertResult);
+              console.log(project);
               console.log("project added successfully");
 
               res.writeHead(200, { "Content-Type": "application/json" });
@@ -281,9 +282,10 @@ function deleteProject(req, res, projectId) {
   }
 }
 // update project
+
 function updateProject(req, res, projectId) {
   const ID = projectId;
-
+  console.log(ID);
   let requestBody = "";
 
   req.on("data", (chunk) => {
@@ -313,6 +315,7 @@ function updateProject(req, res, projectId) {
             message: "Required fields are missing: " + missingFields.join(", "),
           })
         );
+
         return;
       }
 
@@ -320,9 +323,9 @@ function updateProject(req, res, projectId) {
       if (
         !updatedInfo.title.trim() ||
         !updatedInfo.description.trim() ||
-        updatedInfo.tags.length === 0 ||
-        updatedInfo.languages.length === 0 ||
-        updatedInfo.technology.length === 0
+        !updatedInfo.tags.trim() ||
+        !updatedInfo.languages.trim() ||
+        !updatedInfo.technology.trim()
       ) {
         res.writeHead(400, { "Content-Type": "application/json" });
         res.end(
@@ -408,13 +411,14 @@ function updateProject(req, res, projectId) {
         sql.query(con, projectUpdateQuery, (error, result) => {
           if (error) {
             console.log("error", error);
-            res.writeHead(500, { "Content-Type": "application/json" });
+            res.writeHead(400, { "Content-Type": "application/json" });
             res.end(
               JSON.stringify({
-                message: "Error updating the project.",
+                message: "project not found",
                 error,
               })
             );
+            return;
           } else {
             console.log("project updated success", result);
             res.writeHead(200, { "Content-Type": "application/json" });
@@ -447,5 +451,4 @@ function updateProject(req, res, projectId) {
     }
   });
 }
-
 export { addProject, deleteProject, showProjects, updateProject };

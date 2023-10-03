@@ -64,7 +64,12 @@ function handleSignup(req, res) {
         );
         return;
       }
-
+      const emailPattern = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
+      if (!emailPattern.test(newUser.email)) {
+        res.writeHead(400, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ message: "Please enter valid email" }));
+        return;
+      }
       const allowedRegexMail = /[^a-zA-Z0-9@.]/g;
       const AfterMaskingeMail = maskText(newUser.email, allowedRegexMail);
       const allowedRegexName = /[^a-zA-Z\s]/g;
@@ -85,7 +90,6 @@ function handleSignup(req, res) {
             return;
             // Handle the error
           }
-          console.log(result);
 
           //console.log("SQL QUeryy results: ", result);
           console.log("User show successful");
@@ -203,7 +207,12 @@ function handleLogin(req, res) {
         );
         return;
       }
-
+      const emailPattern = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
+      if (!emailPattern.test(loginUser.email)) {
+        res.writeHead(400, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ message: "Please enter valid email" }));
+        return;
+      }
       console.log(loginUser);
       // Sql Query for check user exist or not
       const allowedRegexMail = /[^a-zA-Z0-9@.]/g;
@@ -222,7 +231,7 @@ function handleLogin(req, res) {
             res.end(JSON.stringify({ message: "Database error" }));
           }
 
-          console.log("SQL Query results: ", result);
+          // console.log("SQL Query results: ", result);
 
           const user = result.find((u) => u.email === loginUser.email);
 
